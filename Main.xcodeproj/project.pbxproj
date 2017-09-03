@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		308994F25CA4E3AFD417728E /* StorableExtras.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDA393F232A6FF6234FA2C43 /* StorableExtras.swift */; };
 		3F91DF0759AB9B6B9B5B8EDC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
 		83AAA5F0D31AADCEE5D2B62D /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD932E9FA1C1949D7F03BEA /* Main.swift */; };
 		947FA15C2DF90BDE4FBADED7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
@@ -50,9 +49,8 @@
 /* Begin PBXFileReference section */
 		BB7E90B322E8C6A7876BBC8C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		BFD932E9FA1C1949D7F03BEA /* Main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
-		CDA393F232A6FF6234FA2C43 /* StorableExtras.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StorableExtras.swift; sourceTree = "<group>"; };
 		D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ByTypeStorage.swift; sourceTree = "<group>"; };
-		E3F35BDF4955D5D7B59ABC15 /* Fwk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Fwk.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E3F35BDF4955D5D7B59ABC15 /* Fwk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Fwk.framework; path = XCEByTypeStorage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F080ABDF4A3B1F3FF91D53A6 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -80,7 +78,7 @@
 			isa = PBXGroup;
 			children = (
 			);
-			name = "$local";
+			name = $local;
 			sourceTree = "<group>";
 		};
 		457E1E85E665765F503FC217 = {
@@ -115,7 +113,6 @@
 			children = (
 				BFD932E9FA1C1949D7F03BEA /* Main.swift */,
 			);
-			name = Tests;
 			path = Tests;
 			sourceTree = SOURCE_ROOT;
 		};
@@ -123,9 +120,7 @@
 			isa = PBXGroup;
 			children = (
 				D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */,
-				CDA393F232A6FF6234FA2C43 /* StorableExtras.swift */,
 			);
-			name = Sources;
 			path = Sources;
 			sourceTree = SOURCE_ROOT;
 		};
@@ -219,7 +214,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "if which swiftlint >/dev/null; then\n    swiftlint\nelse\n    echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi";
-			showEnvVarsInLog = 1;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -237,7 +231,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */,
-				308994F25CA4E3AFD417728E /* StorableExtras.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

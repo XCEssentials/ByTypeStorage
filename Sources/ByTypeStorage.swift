@@ -24,10 +24,6 @@
  
  */
 
-// -----------------------------------------------------------------------------
-
-// MARK: - Base declarations
-
 /**
  Data container that allows to store exactly one instance of any given type.
  
@@ -47,7 +43,7 @@ class ByTypeStorage
      Id helps to avoid dublicates. Only one subscription is allowed per observer.
      */
     fileprivate
-    var subscriptions = [Subscription.Identifier: Subscription]()
+    var subscriptions: [Subscription.Identifier: Subscription] = [:]
 }
 
 // MARK: - Protocols
