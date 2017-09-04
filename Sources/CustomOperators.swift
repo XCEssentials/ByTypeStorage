@@ -24,22 +24,44 @@
  
  */
 
-/**
- Data container that allows to store exactly one instance of any given type.
- 
- It's Dictionary-like (and Dictionary-based) key-value storage where full name of the type (including module name, including all parent types for nested types) converted to a string is used as key for storing instance of this type. This feature allows to avoid the need of hard-coded string-based keys, improves type-safety, simplifies usage. Obviously, this data container is supposed to be used with custom data types that have some domain-specific semantics in their names.
- */
+infix operator /<
+
+// MARK: - GET operators
+
 public
-final
-class ByTypeStorage
+func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
 {
-    public
-    init() {}
-    
-    var data = [Key: Storable]()
-    
-    /**
-     Id helps to avoid dublicates. Only one subscription is allowed per observer.
-     */
-    var subscriptions: [Subscription.Identifier: Subscription] = [:]
+    return storage.extract(T.self)
+}
+
+//===
+
+public
+func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
+{
+    target = pair.1.extract(T.self)
+}
+
+//===
+
+public
+func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?
+{
+    return storage.extract(T.self)
+}
+
+// MARK: - SET operators
+
+public
+func << <T: Storable>(storage: ByTypeStorage, value: T?)
+{
+    storage.merge(value)
+}
+
+// MARK: - REMOVE operators
+
+public
+func /< <T: Storable>(storage: ByTypeStorage, _: T.Type)
+{
+    storage.remove(T.self)
 }

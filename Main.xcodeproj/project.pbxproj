@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		3F91DF0759AB9B6B9B5B8EDC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
 		83AAA5F0D31AADCEE5D2B62D /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD932E9FA1C1949D7F03BEA /* Main.swift */; };
+		946283B11F5DBA11008BF2D1 /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B01F5DBA11008BF2D1 /* CustomOperators.swift */; };
+		946283B31F5DBA64008BF2D1 /* DataAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B21F5DBA64008BF2D1 /* DataAccess.swift */; };
+		946283B51F5DBAE4008BF2D1 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B41F5DBAE4008BF2D1 /* Subscription.swift */; };
+		946283B71F5DBB2E008BF2D1 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B61F5DBB2E008BF2D1 /* Protocols.swift */; };
 		947FA15C2DF90BDE4FBADED7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
 		D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */; };
 /* End PBXBuildFile section */
@@ -47,6 +51,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		946283B01F5DBA11008BF2D1 /* CustomOperators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
+		946283B21F5DBA64008BF2D1 /* DataAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataAccess.swift; sourceTree = "<group>"; };
+		946283B41F5DBAE4008BF2D1 /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
+		946283B61F5DBB2E008BF2D1 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		BB7E90B322E8C6A7876BBC8C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		BFD932E9FA1C1949D7F03BEA /* Main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
 		D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ByTypeStorage.swift; sourceTree = "<group>"; };
@@ -120,6 +128,10 @@
 			isa = PBXGroup;
 			children = (
 				D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */,
+				946283B01F5DBA11008BF2D1 /* CustomOperators.swift */,
+				946283B21F5DBA64008BF2D1 /* DataAccess.swift */,
+				946283B41F5DBAE4008BF2D1 /* Subscription.swift */,
+				946283B61F5DBB2E008BF2D1 /* Protocols.swift */,
 			);
 			path = Sources;
 			sourceTree = SOURCE_ROOT;
@@ -230,6 +242,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				946283B71F5DBB2E008BF2D1 /* Protocols.swift in Sources */,
+				946283B11F5DBA11008BF2D1 /* CustomOperators.swift in Sources */,
+				946283B31F5DBA64008BF2D1 /* DataAccess.swift in Sources */,
+				946283B51F5DBAE4008BF2D1 /* Subscription.swift in Sources */,
 				D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

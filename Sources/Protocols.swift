@@ -24,22 +24,29 @@
  
  */
 
-/**
- Data container that allows to store exactly one instance of any given type.
- 
- It's Dictionary-like (and Dictionary-based) key-value storage where full name of the type (including module name, including all parent types for nested types) converted to a string is used as key for storing instance of this type. This feature allows to avoid the need of hard-coded string-based keys, improves type-safety, simplifies usage. Obviously, this data container is supposed to be used with custom data types that have some domain-specific semantics in their names.
- */
 public
-final
-class ByTypeStorage
+protocol Storable { }
+
+//===
+
+public
+protocol StorageObserver: class
 {
-    public
-    init() {}
-    
-    var data = [Key: Storable]()
-    
-    /**
-     Id helps to avoid dublicates. Only one subscription is allowed per observer.
-     */
-    var subscriptions: [Subscription.Identifier: Subscription] = [:]
+    func update(with change: ByTypeStorage.Change, in storage: ByTypeStorage)
+}
+
+//===
+
+public
+protocol StorageInitializable
+{
+    init(with storage: ByTypeStorage)
+}
+
+//===
+
+public
+protocol StorageBindable
+{
+    func bind(with storage: ByTypeStorage) -> Self
 }
