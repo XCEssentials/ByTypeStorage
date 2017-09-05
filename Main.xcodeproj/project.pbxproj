@@ -8,7 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		3F91DF0759AB9B6B9B5B8EDC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
-		83AAA5F0D31AADCEE5D2B62D /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD932E9FA1C1949D7F03BEA /* Main.swift */; };
+		946283B11F5DBA11008BF2D1 /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B01F5DBA11008BF2D1 /* CustomOperators.swift */; };
+		946283B31F5DBA64008BF2D1 /* DataAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B21F5DBA64008BF2D1 /* DataAccess.swift */; };
+		946283B51F5DBAE4008BF2D1 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B41F5DBAE4008BF2D1 /* Subscription.swift */; };
+		946283B71F5DBB2E008BF2D1 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B61F5DBB2E008BF2D1 /* Protocols.swift */; };
+		946283B91F5DC68A008BF2D1 /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B81F5DC68A008BF2D1 /* Main.swift */; };
 		947FA15C2DF90BDE4FBADED7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
 		D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */; };
 /* End PBXBuildFile section */
@@ -47,8 +51,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		946283B01F5DBA11008BF2D1 /* CustomOperators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
+		946283B21F5DBA64008BF2D1 /* DataAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataAccess.swift; sourceTree = "<group>"; };
+		946283B41F5DBAE4008BF2D1 /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
+		946283B61F5DBB2E008BF2D1 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
+		946283B81F5DC68A008BF2D1 /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
 		BB7E90B322E8C6A7876BBC8C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		BFD932E9FA1C1949D7F03BEA /* Main.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
 		D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ByTypeStorage.swift; sourceTree = "<group>"; };
 		E3F35BDF4955D5D7B59ABC15 /* Fwk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Fwk.framework; path = XCEByTypeStorage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F080ABDF4A3B1F3FF91D53A6 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -111,7 +119,7 @@
 		B9AE55CB38FE8BD4302F6273 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				BFD932E9FA1C1949D7F03BEA /* Main.swift */,
+				946283B81F5DC68A008BF2D1 /* Main.swift */,
 			);
 			path = Tests;
 			sourceTree = SOURCE_ROOT;
@@ -120,6 +128,10 @@
 			isa = PBXGroup;
 			children = (
 				D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */,
+				946283B61F5DBB2E008BF2D1 /* Protocols.swift */,
+				946283B41F5DBAE4008BF2D1 /* Subscription.swift */,
+				946283B21F5DBA64008BF2D1 /* DataAccess.swift */,
+				946283B01F5DBA11008BF2D1 /* CustomOperators.swift */,
 			);
 			path = Sources;
 			sourceTree = SOURCE_ROOT;
@@ -181,6 +193,12 @@
 				LastSwiftUpdateCheck = 0830;
 				LastUpgradeCheck = 0700;
 				Struct.Version = 2.1.0;
+				TargetAttributes = {
+					EF2E0020F07B7E15EE6F992A = {
+						LastSwiftMigration = 0900;
+						ProvisioningStyle = Automatic;
+					};
+				};
 			};
 			buildConfigurationList = AA2C9B06BEA05721BA07D898 /* Build configuration list for PBXProject "Main" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -222,7 +240,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				83AAA5F0D31AADCEE5D2B62D /* Main.swift in Sources */,
+				946283B91F5DC68A008BF2D1 /* Main.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,6 +248,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				946283B71F5DBB2E008BF2D1 /* Protocols.swift in Sources */,
+				946283B11F5DBA11008BF2D1 /* CustomOperators.swift in Sources */,
+				946283B31F5DBA64008BF2D1 /* DataAccess.swift in Sources */,
+				946283B51F5DBAE4008BF2D1 /* Subscription.swift in Sources */,
 				D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -250,7 +272,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(BUILT_PRODUCTS_DIR)",
@@ -260,6 +285,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = io.XCEssentials.ByTypeStorage.Tst;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				SWIFT_VERSION = 3.0;
 			};
@@ -290,7 +316,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -343,7 +369,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -368,7 +394,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info/Fwk.plist;
@@ -390,7 +416,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(BUILT_PRODUCTS_DIR)",
@@ -401,7 +430,9 @@
 				MTL_ENABLE_DEBUG_INFO = true;
 				PRODUCT_BUNDLE_IDENTIFIER = io.XCEssentials.ByTypeStorage.Tst;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -410,7 +441,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info/Fwk.plist;
