@@ -24,46 +24,28 @@
  
  */
 
+/**
+ Conformance to this protocol allows an instance of 'Self' type to be stored in any 'ByTypeStorage' instance.
+ */
 public
-final
-class ByTypeStorage
+protocol Storable
 {
-    public
-    init() {}
-    
-    //===
-    
-    typealias Key = String
-    
-    var data = [Key: Storable]()
-    
     /**
-     Id helps to avoid dublicates. Only one subscription is allowed per observer.
+     The type that should be used as a key inside 'ByTypeStorage' instance. By default, 'ByTypeStorage' uses this type itself as a key for storing an instance of this type. Custom implementation of this property allows to override default behaviour of 'ByTypeStorage' instance when dealing with these types. It enables interesting technique, when several different types can declare same type as their key type, making instances of these types to be "mutually exclusive" within the same given storage, so they will override each other.
      */
-    var subscriptions: [Subscription.Identifier: Subscription] = [:]
+    static
+    var key: Any.Type { get }
 }
 
-// MARK: - Key generation
-
-extension ByTypeStorage.Key
+public
+extension Storable
 {
+    /**
+     By default, 'ByTypeStorage' uses this type itself as a key for storing an instance of this type.
+     */
     static
-    func keyType<T>(for _: T.Type) -> Any.Type
+    var key: Any.Type
     {
-        if
-            let StorableT = T.self as? Storable.Type
-        {
-            return StorableT.key
-        }
-        else
-        {
-            return T.self
-        }
-    }
-    
-    static
-    func derived<T>(from _: T.Type) -> ByTypeStorage.Key
-    {
-        return ByTypeStorage.Key(reflecting: keyType(for: T.self))
+        return self
     }
 }

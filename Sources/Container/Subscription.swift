@@ -25,15 +25,16 @@
  */
 
 public
-extension ByTypeStorage
+protocol StorageObserver: class
 {
-    enum Change
-    {
-        case addition(forKey: Any.Type)
-        case update(forKey: Any.Type)
-        case removal(forKey: Any.Type)
-    }
-    
+    func update(with storage: ByTypeStorage, diff: ByTypeStorage.MutationDiff)
+}
+
+//===
+
+extension ByTypeStorage.Container
+{
+    public
     final
     class Subscription
     {
@@ -55,7 +56,7 @@ extension ByTypeStorage
 
 // MARK: - Subscriptions management
 
-extension ByTypeStorage.Subscription
+extension ByTypeStorage.Container.Subscription
 {
     public
     func cancel()
@@ -67,14 +68,14 @@ extension ByTypeStorage.Subscription
      Returns value that indicates whatever this subscription should be preserved or not.
      */
     func notifyAndKeep(
-        with change: ByTypeStorage.Change,
-        in storage: ByTypeStorage
+        with storage: ByTypeStorage,
+        diff: ByTypeStorage.MutationDiff
         ) -> Bool
     {
         if
             let observer = observer
         {
-            observer.update(with: change, in: storage)
+            observer.update(with: storage, diff: diff)
             
             return true
         }
@@ -87,10 +88,10 @@ extension ByTypeStorage.Subscription
 
 //===
 
-extension ByTypeStorage
+public
+extension ByTypeStorage.Container
 {
     @discardableResult
-    public
     func subscribe(_ observer: StorageObserver) -> Subscription
     {
         let result = Subscription(for: observer)
@@ -98,15 +99,19 @@ extension ByTypeStorage
         
         return result
     }
-    
-    //===
-    
-    func notifyObservers(with change: Change)
+}
+
+//===
+
+extension ByTypeStorage.Container
+{
+    func notifyObservers(with storage: ByTypeStorage,
+                         diff: ByTypeStorage.MutationDiff)
     {
         // in one pass, notify all valid subscriptions and
         // then remove subscriptions that are no longer needed
         subscriptions
-            .filter { !$0.value.notifyAndKeep(with: change, in: self) }
+            .filter { !$0.value.notifyAndKeep(with: storage, diff: diff) }
             .map { $0.key }
             .forEach { subscriptions[$0] = nil }
     }
