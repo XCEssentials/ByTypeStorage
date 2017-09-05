@@ -8,13 +8,16 @@
 
 /* Begin PBXBuildFile section */
 		3F91DF0759AB9B6B9B5B8EDC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
-		946283B11F5DBA11008BF2D1 /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B01F5DBA11008BF2D1 /* CustomOperators.swift */; };
-		946283B31F5DBA64008BF2D1 /* DataAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B21F5DBA64008BF2D1 /* DataAccess.swift */; };
-		946283B51F5DBAE4008BF2D1 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B41F5DBAE4008BF2D1 /* Subscription.swift */; };
-		946283B71F5DBB2E008BF2D1 /* Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B61F5DBB2E008BF2D1 /* Protocols.swift */; };
 		946283B91F5DC68A008BF2D1 /* Main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946283B81F5DC68A008BF2D1 /* Main.swift */; };
+		946E342B1F5F1759008D9CC4 /* ByTypeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34231F5F1182008D9CC4 /* ByTypeStorage.swift */; };
+		946E342C1F5F1759008D9CC4 /* KeyGeneration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34241F5F1182008D9CC4 /* KeyGeneration.swift */; };
+		946E342D1F5F1759008D9CC4 /* DataAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34261F5F1182008D9CC4 /* DataAccess.swift */; };
+		946E342E1F5F1759008D9CC4 /* Storable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34271F5F1182008D9CC4 /* Storable.swift */; };
+		946E342F1F5F1759008D9CC4 /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34251F5F1182008D9CC4 /* CustomOperators.swift */; };
+		946E34301F5F175D008D9CC4 /* Container.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34291F5F1182008D9CC4 /* Container.swift */; };
+		946E34311F5F175D008D9CC4 /* Subscription.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E342A1F5F1182008D9CC4 /* Subscription.swift */; };
+		946E34331F5F2408008D9CC4 /* DataAccessViaContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946E34321F5F2408008D9CC4 /* DataAccessViaContainer.swift */; };
 		947FA15C2DF90BDE4FBADED7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB7E90B322E8C6A7876BBC8C /* Foundation.framework */; };
-		D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -51,13 +54,16 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		946283B01F5DBA11008BF2D1 /* CustomOperators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
-		946283B21F5DBA64008BF2D1 /* DataAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataAccess.swift; sourceTree = "<group>"; };
-		946283B41F5DBAE4008BF2D1 /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
-		946283B61F5DBB2E008BF2D1 /* Protocols.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Protocols.swift; sourceTree = "<group>"; };
 		946283B81F5DC68A008BF2D1 /* Main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Main.swift; sourceTree = "<group>"; };
+		946E34231F5F1182008D9CC4 /* ByTypeStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByTypeStorage.swift; sourceTree = "<group>"; };
+		946E34241F5F1182008D9CC4 /* KeyGeneration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyGeneration.swift; sourceTree = "<group>"; };
+		946E34251F5F1182008D9CC4 /* CustomOperators.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
+		946E34261F5F1182008D9CC4 /* DataAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataAccess.swift; sourceTree = "<group>"; };
+		946E34271F5F1182008D9CC4 /* Storable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storable.swift; sourceTree = "<group>"; };
+		946E34291F5F1182008D9CC4 /* Container.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Container.swift; sourceTree = "<group>"; };
+		946E342A1F5F1182008D9CC4 /* Subscription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subscription.swift; sourceTree = "<group>"; };
+		946E34321F5F2408008D9CC4 /* DataAccessViaContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataAccessViaContainer.swift; sourceTree = "<group>"; };
 		BB7E90B322E8C6A7876BBC8C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
-		D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ByTypeStorage.swift; sourceTree = "<group>"; };
 		E3F35BDF4955D5D7B59ABC15 /* Fwk.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Fwk.framework; path = XCEByTypeStorage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F080ABDF4A3B1F3FF91D53A6 /* Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -108,6 +114,28 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		946E34221F5F1182008D9CC4 /* Storage */ = {
+			isa = PBXGroup;
+			children = (
+				946E34231F5F1182008D9CC4 /* ByTypeStorage.swift */,
+				946E34241F5F1182008D9CC4 /* KeyGeneration.swift */,
+				946E34261F5F1182008D9CC4 /* DataAccess.swift */,
+				946E34271F5F1182008D9CC4 /* Storable.swift */,
+				946E34251F5F1182008D9CC4 /* CustomOperators.swift */,
+			);
+			path = Storage;
+			sourceTree = "<group>";
+		};
+		946E34281F5F1182008D9CC4 /* Container */ = {
+			isa = PBXGroup;
+			children = (
+				946E34291F5F1182008D9CC4 /* Container.swift */,
+				946E342A1F5F1182008D9CC4 /* Subscription.swift */,
+				946E34321F5F2408008D9CC4 /* DataAccessViaContainer.swift */,
+			);
+			path = Container;
+			sourceTree = "<group>";
+		};
 		A5605B6F8C48E4B02E5E10A5 /* iOS */ = {
 			isa = PBXGroup;
 			children = (
@@ -127,11 +155,8 @@
 		D7DEAA50F01BD7AF589F993C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
-				D0D030C7BAE82B116DAAF22A /* ByTypeStorage.swift */,
-				946283B61F5DBB2E008BF2D1 /* Protocols.swift */,
-				946283B41F5DBAE4008BF2D1 /* Subscription.swift */,
-				946283B21F5DBA64008BF2D1 /* DataAccess.swift */,
-				946283B01F5DBA11008BF2D1 /* CustomOperators.swift */,
+				946E34221F5F1182008D9CC4 /* Storage */,
+				946E34281F5F1182008D9CC4 /* Container */,
 			);
 			path = Sources;
 			sourceTree = SOURCE_ROOT;
@@ -248,11 +273,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				946283B71F5DBB2E008BF2D1 /* Protocols.swift in Sources */,
-				946283B11F5DBA11008BF2D1 /* CustomOperators.swift in Sources */,
-				946283B31F5DBA64008BF2D1 /* DataAccess.swift in Sources */,
-				946283B51F5DBAE4008BF2D1 /* Subscription.swift in Sources */,
-				D2336AECEBB6DEFB97038015 /* ByTypeStorage.swift in Sources */,
+				946E342F1F5F1759008D9CC4 /* CustomOperators.swift in Sources */,
+				946E34301F5F175D008D9CC4 /* Container.swift in Sources */,
+				946E342B1F5F1759008D9CC4 /* ByTypeStorage.swift in Sources */,
+				946E342E1F5F1759008D9CC4 /* Storable.swift in Sources */,
+				946E34311F5F175D008D9CC4 /* Subscription.swift in Sources */,
+				946E342D1F5F1759008D9CC4 /* DataAccess.swift in Sources */,
+				946E342C1F5F1759008D9CC4 /* KeyGeneration.swift in Sources */,
+				946E34331F5F2408008D9CC4 /* DataAccessViaContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,7 +344,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -369,7 +397,7 @@
 				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -394,7 +422,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEFINES_MODULE = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info/Fwk.plist;
@@ -441,7 +469,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEFINES_MODULE = NO;
 				ENABLE_TESTABILITY = YES;
 				INFOPLIST_FILE = Info/Fwk.plist;
