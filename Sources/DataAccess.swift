@@ -24,36 +24,31 @@
  
  */
 
-// MARK: - Key generation
-
-public
-extension ByTypeStorage
-{
-    typealias Key = String
-    
-    fileprivate
-    static
-        func key(for type: Storable.Type) -> Key
-    {
-        return Key(reflecting: type)
-    }
-}
-
 // MARK: - GET data
 
 public
 extension ByTypeStorage
 {
-    func extract<T: Storable>(_: T.Type) -> T?
+    func value<T: Storable>(of _: T.Type) -> T?
     {
-        return data[ByTypeStorage.key(for: T.self)] as? T
+        return data[Key.derived(from: T.self)] as? T
+    }
+    
+    func value<T>(forKey _: T.Type) -> Storable?
+    {
+        return data[Key.derived(from: T.self)]
     }
     
     //===
     
-    func has<T: Storable>(_: T.Type) -> Bool
+    func hasValue<T: Storable>(of _: T.Type) -> Bool
     {
-        return data[ByTypeStorage.key(for: T.self)] != nil
+        return value(of: T.self) != nil
+    }
+    
+    func hasValue<T>(forKey _: T.Type) -> Bool
+    {
+        return value(forKey: T.self) != nil
     }
 }
 
@@ -63,17 +58,17 @@ public
 extension Storable
 {
     static
-        func from(_ storage: ByTypeStorage) -> Self?
+    func from(_ storage: ByTypeStorage) -> Self?
     {
-        return storage.extract(self)
+        return storage.value(of: self)
     }
     
     //===
     
     static
-        func presented(in storage: ByTypeStorage) -> Bool
+    func presented(in storage: ByTypeStorage) -> Bool
     {
-        return storage.has(self)
+        return storage.hasValue(of: self)
     }
 }
 
@@ -82,10 +77,26 @@ extension Storable
 public
 extension ByTypeStorage
 {
-    func merge<T: Storable>(_ value: T?)
+    func storeValue<T: Storable>(_ value: T?)
     {
-        let change: Change = has(T.self) ? .update(ofType: T.self) : .addition(ofType: T.self)
-        data[ByTypeStorage.key(for: T.self)] = value
+        let change: Change
+            
+        if
+            hasValue(of: T.self)
+        {
+            change = .update(forKey: Key.keyType(for: T.self))
+        }
+        else
+        {
+            change = .addition(forKey: Key.keyType(for: T.self))
+        }
+        
+        //---
+        
+        data[Key.derived(from: T.self)] = value
+        
+        //---
+        
         notifyObservers(with: change)
     }
 }
@@ -98,7 +109,7 @@ extension Storable
     @discardableResult
     func store(in storage: ByTypeStorage) -> Self
     {
-        storage.merge(self)
+        storage.storeValue(self)
         
         //---
         
@@ -111,11 +122,40 @@ extension Storable
 public
 extension ByTypeStorage
 {
-    func remove<T: Storable>(_: T.Type)
+    func removeValue<T: Storable>(of _: T.Type)
     {
-        let change = has(T.self) ? Change.removal(ofType: T.self) : nil
-        data[ByTypeStorage.key(for: T.self)] = nil
-        change.map(notifyObservers)
+        guard
+            hasValue(of: T.self)
+        else
+        {
+            return
+        }
+        
+        //---
+        
+        data[Key.derived(from: T.self)] = nil
+        
+        //---
+        
+        notifyObservers(with: Change.removal(forKey: Key.keyType(for: T.self)))
+    }
+    
+    func removeValue<T>(forKey _: T.Type)
+    {
+        guard
+            hasValue(forKey: T.self)
+        else
+        {
+            return
+        }
+        
+        //---
+        
+        data[Key.derived(from: T.self)] = nil
+        
+        //---
+        
+        notifyObservers(with: Change.removal(forKey: Key.keyType(for: T.self)))
     }
 }
 
@@ -125,8 +165,8 @@ public
 extension Storable
 {
     static
-        func remove(from storage: ByTypeStorage)
+    func remove(from storage: ByTypeStorage)
     {
-        return storage.remove(self)
+        return storage.removeValue(of: self)
     }
 }

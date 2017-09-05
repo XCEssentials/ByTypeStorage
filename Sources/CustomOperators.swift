@@ -31,7 +31,7 @@ infix operator /<
 public
 func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
 {
-    return storage.extract(T.self)
+    return storage.value(of: T.self)
 }
 
 //===
@@ -39,7 +39,7 @@ func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
 public
 func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
 {
-    target = pair.1.extract(T.self)
+    target = pair.1.value(of: T.self)
 }
 
 //===
@@ -47,7 +47,7 @@ func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
 public
 func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?
 {
-    return storage.extract(T.self)
+    return storage.value(of: T.self)
 }
 
 // MARK: - SET operators
@@ -55,7 +55,13 @@ func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?
 public
 func << <T: Storable>(storage: ByTypeStorage, value: T?)
 {
-    storage.merge(value)
+    storage.storeValue(value)
+}
+
+public
+func >> <T: Storable>(value: T?, storage: ByTypeStorage)
+{
+    storage.storeValue(value)
 }
 
 // MARK: - REMOVE operators
@@ -63,5 +69,5 @@ func << <T: Storable>(storage: ByTypeStorage, value: T?)
 public
 func /< <T: Storable>(storage: ByTypeStorage, _: T.Type)
 {
-    storage.remove(T.self)
+    storage.removeValue(of: T.self)
 }

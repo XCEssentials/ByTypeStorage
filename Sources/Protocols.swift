@@ -24,8 +24,31 @@
  
  */
 
+/**
+ Conformance to this protocol allows an instance of 'Self' type to be stored in any 'ByTypeStorage' instance.
+ */
 public
-protocol Storable { }
+protocol Storable
+{
+    /**
+     The type that should be used as a key inside 'ByTypeStorage' instance. By default, 'ByTypeStorage' uses this type itself as a key for storing an instance of this type. Custom implementation of this property allows to override default behaviour of 'ByTypeStorage' instance when dealing with these types. It enables interesting technique, when several different types can declare same type as their key type, making instances of these types to be "mutually exclusive" within the same given storage, so they will override each other.
+     */
+    static
+    var key: Any.Type { get }
+}
+
+public
+extension Storable
+{
+    /**
+     By default, 'ByTypeStorage' uses this type itself as a key for storing an instance of this type.
+     */
+    static
+    var key: Any.Type
+    {
+        return self
+    }
+}
 
 //===
 

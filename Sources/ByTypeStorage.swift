@@ -24,11 +24,6 @@
  
  */
 
-/**
- Data container that allows to store exactly one instance of any given type.
- 
- It's Dictionary-like (and Dictionary-based) key-value storage where full name of the type (including module name, including all parent types for nested types) converted to a string is used as key for storing instance of this type. This feature allows to avoid the need of hard-coded string-based keys, improves type-safety, simplifies usage. Obviously, this data container is supposed to be used with custom data types that have some domain-specific semantics in their names.
- */
 public
 final
 class ByTypeStorage
@@ -36,10 +31,39 @@ class ByTypeStorage
     public
     init() {}
     
+    //===
+    
+    typealias Key = String
+    
     var data = [Key: Storable]()
     
     /**
      Id helps to avoid dublicates. Only one subscription is allowed per observer.
      */
     var subscriptions: [Subscription.Identifier: Subscription] = [:]
+}
+
+// MARK: - Key generation
+
+extension ByTypeStorage.Key
+{
+    static
+    func keyType<T>(for _: T.Type) -> Any.Type
+    {
+        if
+            let StorableT = T.self as? Storable.Type
+        {
+            return StorableT.key
+        }
+        else
+        {
+            return T.self
+        }
+    }
+    
+    static
+    func derived<T>(from _: T.Type) -> ByTypeStorage.Key
+    {
+        return ByTypeStorage.Key(reflecting: keyType(for: T.self))
+    }
 }

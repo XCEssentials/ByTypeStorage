@@ -29,55 +29,63 @@ extension ByTypeStorage
 {
     enum Change
     {
-        case addition(ofType: Storable.Type)
-        case update(ofType: Storable.Type)
-        case removal(ofType: Storable.Type)
+        case addition(forKey: Any.Type)
+        case update(forKey: Any.Type)
+        case removal(forKey: Any.Type)
     }
     
     final
     class Subscription
     {
+        typealias Identifier = ObjectIdentifier
+        
+        let identifier: ObjectIdentifier
+        
+        public fileprivate(set)
+        weak
+        var observer: StorageObserver?
+        
         init(for observer: StorageObserver)
         {
             self.identifier = Identifier(observer)
             self.observer = observer
         }
-        
-        typealias Identifier = ObjectIdentifier
-        
-        let identifier: ObjectIdentifier
-        
-        public private(set)
-        weak
-        var observer: StorageObserver?
-        
-        public
-        func cancel()
-        {
-            observer = nil
-        }
-        
-        /**
-         Returns value that indicates whatever this subscription should be preserved or not.
-         */
-        func notifyAndKeep(with change: Change, in storage: ByTypeStorage) -> Bool
-        {
-            if
-                let observer = observer
-            {
-                observer.update(with: change, in: storage)
-                
-                return true
-            }
-            else
-            {
-                return false
-            }
-        }
     }
 }
 
 // MARK: - Subscriptions management
+
+extension ByTypeStorage.Subscription
+{
+    public
+    func cancel()
+    {
+        observer = nil
+    }
+    
+    /**
+     Returns value that indicates whatever this subscription should be preserved or not.
+     */
+    func notifyAndKeep(
+        with change: ByTypeStorage.Change,
+        in storage: ByTypeStorage
+        ) -> Bool
+    {
+        if
+            let observer = observer
+        {
+            observer.update(with: change, in: storage)
+            
+            return true
+        }
+        else
+        {
+            return false
+        }
+    }
+}
+
+//===
 
 extension ByTypeStorage
 {
