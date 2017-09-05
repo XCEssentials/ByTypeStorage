@@ -24,50 +24,55 @@
  
  */
 
-infix operator /<
-
-// MARK: - GET operators
-
 public
-func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
+extension ByTypeStorage
 {
-    return storage.value(of: T.self)
+    final
+    class Container
+    {
+        public
+        init(with storage: ByTypeStorage = ByTypeStorage())
+        {
+            self.storage = (storage, nil)
+        }
+        
+        //===
+        
+        public
+        typealias Content =
+            (itself: ByTypeStorage, recentChange: ByTypeStorage.MutationDiff?)
+        
+        public internal(set)
+        var storage: Content
+        {
+            didSet
+            {
+                storage.recentChange
+                    .map{ notifyObservers(with: storage.itself, diff: $0) }
+            }
+        }
+        
+        //===
+        
+        /**
+         Id helps to avoid dublicates. Only one subscription is allowed per observer.
+         */
+        var subscriptions: [Subscription.Identifier: Subscription] = [:]
+    }
 }
 
 //===
 
 public
-func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
+protocol StorageInitializable: class
 {
-    target = pair.1.value(of: T.self)
+    init(with storage: ByTypeStorage.Container)
 }
 
 //===
 
 public
-func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?
+protocol StorageBindable: class
 {
-    return storage.value(of: T.self)
-}
-
-// MARK: - SET operators
-
-public
-func << <T: Storable>(storage: ByTypeStorage, value: T?)
-{
-    storage.storeValue(value)
-}
-
-public
-func >> <T: Storable>(value: T?, storage: ByTypeStorage)
-{
-    storage.storeValue(value)
-}
-
-// MARK: - REMOVE operators
-
-public
-func /< <T: Storable>(storage: ByTypeStorage, _: T.Type)
-{
-    storage.removeValue(of: T.self)
+    func bind(with storage: ByTypeStorage.Container) -> Self
 }

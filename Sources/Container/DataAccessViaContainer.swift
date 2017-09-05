@@ -27,28 +27,28 @@
 // MARK: - GET data
 
 public
-extension ByTypeStorage
+extension ByTypeStorage.Container
 {
     func value<T: Storable>(of _: T.Type) -> T?
     {
-        return data[Key.derived(from: T.self)] as? T
+        return storage.itself.value(of: T.self)
     }
-    
+
     func value<T>(forKey _: T.Type) -> Storable?
     {
-        return data[Key.derived(from: T.self)]
+        return storage.itself.value(forKey: T.self)
     }
-    
+
     //===
-    
+
     func hasValue<T: Storable>(of _: T.Type) -> Bool
     {
-        return value(of: T.self) != nil
+        return storage.itself.hasValue(of: T.self)
     }
-    
+
     func hasValue<T>(forKey _: T.Type) -> Bool
     {
-        return value(forKey: T.self) != nil
+        return storage.itself.hasValue(forKey: T.self)
     }
 }
 
@@ -58,46 +58,36 @@ public
 extension Storable
 {
     static
-    func from(_ storage: ByTypeStorage) -> Self?
+    func from(_ storage: ByTypeStorage.Container) -> Self?
     {
         return storage.value(of: self)
     }
-    
+
     //===
-    
+
     static
-    func presented(in storage: ByTypeStorage) -> Bool
+    func presented(in storage: ByTypeStorage.Container) -> Bool
     {
         return storage.hasValue(of: self)
     }
 }
 
+// MARK: - Mutation helpers
+
+func << (lhs: inout ByTypeStorage.Container.Content,
+         rhs: ByTypeStorage.MutationResult?)
+{
+    rhs.map{ lhs = ($0.storage, $0.diff) }
+}
+
 // MARK: - SET data
 
 public
-extension ByTypeStorage
+extension ByTypeStorage.Container
 {
     func storeValue<T: Storable>(_ value: T?)
     {
-        let change: Change
-            
-        if
-            hasValue(of: T.self)
-        {
-            change = .update(forKey: Key.keyType(for: T.self))
-        }
-        else
-        {
-            change = .addition(forKey: Key.keyType(for: T.self))
-        }
-        
-        //---
-        
-        data[Key.derived(from: T.self)] = value
-        
-        //---
-        
-        notifyObservers(with: change)
+        storage << storage.itself.storeValue(value)
     }
 }
 
@@ -107,12 +97,12 @@ public
 extension Storable
 {
     @discardableResult
-    func store(in storage: ByTypeStorage) -> Self
+    func store(in storage: ByTypeStorage.Container) -> Self
     {
         storage.storeValue(self)
-        
+
         //---
-        
+
         return self
     }
 }
@@ -120,42 +110,16 @@ extension Storable
 // MARK: - REMOVE data
 
 public
-extension ByTypeStorage
+extension ByTypeStorage.Container
 {
     func removeValue<T: Storable>(of _: T.Type)
     {
-        guard
-            hasValue(of: T.self)
-        else
-        {
-            return
-        }
-        
-        //---
-        
-        data[Key.derived(from: T.self)] = nil
-        
-        //---
-        
-        notifyObservers(with: Change.removal(forKey: Key.keyType(for: T.self)))
+        storage << storage.itself.removeValue(of: T.self)
     }
-    
+
     func removeValue<T>(forKey _: T.Type)
     {
-        guard
-            hasValue(forKey: T.self)
-        else
-        {
-            return
-        }
-        
-        //---
-        
-        data[Key.derived(from: T.self)] = nil
-        
-        //---
-        
-        notifyObservers(with: Change.removal(forKey: Key.keyType(for: T.self)))
+        storage << storage.itself.removeValue(forKey: T.self)
     }
 }
 
@@ -164,9 +128,24 @@ extension ByTypeStorage
 public
 extension Storable
 {
-    static
-    func remove(from storage: ByTypeStorage)
+    @discardableResult
+    func remove(from storage: ByTypeStorage.Container) -> Self
     {
-        return storage.removeValue(of: self)
+        storage.removeValue(of: type(of: self))
+
+        //---
+
+        return self
+    }
+
+    @discardableResult
+    static
+    func remove(from storage: ByTypeStorage.Container) -> Self.Type
+    {
+        storage.removeValue(of: self)
+
+        //---
+
+        return self
     }
 }
