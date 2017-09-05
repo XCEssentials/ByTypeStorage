@@ -24,46 +24,50 @@
  
  */
 
+infix operator /<
+
+// MARK: - GET operators
+
 public
-final
-class ByTypeStorage
+func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
 {
-    public
-    init() {}
-    
-    //===
-    
-    typealias Key = String
-    
-    var data = [Key: Storable]()
-    
-    /**
-     Id helps to avoid dublicates. Only one subscription is allowed per observer.
-     */
-    var subscriptions: [Subscription.Identifier: Subscription] = [:]
+    return storage.value(of: T.self)
 }
 
-// MARK: - Key generation
+//===
 
-extension ByTypeStorage.Key
+public
+func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
 {
-    static
-    func keyType<T>(for _: T.Type) -> Any.Type
-    {
-        if
-            let StorableT = T.self as? Storable.Type
-        {
-            return StorableT.key
-        }
-        else
-        {
-            return T.self
-        }
-    }
-    
-    static
-    func derived<T>(from _: T.Type) -> ByTypeStorage.Key
-    {
-        return ByTypeStorage.Key(reflecting: keyType(for: T.self))
-    }
+    target = pair.1.value(of: T.self)
+}
+
+//===
+
+public
+func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?
+{
+    return storage.value(of: T.self)
+}
+
+// MARK: - SET operators
+
+public
+func << <T: Storable>(storage: ByTypeStorage, value: T?)
+{
+    storage.storeValue(value)
+}
+
+public
+func >> <T: Storable>(value: T?, storage: ByTypeStorage)
+{
+    storage.storeValue(value)
+}
+
+// MARK: - REMOVE operators
+
+public
+func /< <T: Storable>(storage: ByTypeStorage, _: T.Type)
+{
+    storage.removeValue(of: T.self)
 }
