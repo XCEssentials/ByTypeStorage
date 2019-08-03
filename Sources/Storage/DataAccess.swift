@@ -29,7 +29,7 @@
 public
 extension ByTypeStorage
 {
-    func value<T: Storable>(of _: T.Type) -> T?
+    func value<T: Storable>(ofType _: T.Type) -> T?
     {
         return data[Key.derived(from: T.self)] as? T
     }
@@ -43,7 +43,7 @@ extension ByTypeStorage
     
     func hasValue<T: Storable>(of _: T.Type) -> Bool
     {
-        return value(of: T.self) != nil
+        return value(ofType: T.self) != nil
     }
     
     func hasValue<T>(forKey _: T.Type) -> Bool
@@ -60,7 +60,7 @@ extension Storable
     static
     func from(_ storage: ByTypeStorage) -> Self?
     {
-        return storage.value(of: self)
+        return storage.value(ofType: self)
     }
 
     //===
@@ -93,7 +93,7 @@ public
 extension ByTypeStorage
 {
     @discardableResult
-    func storeValue<T: Storable>(_ value: T?) -> MutationResult
+    func store<T: Storable>(_ value: T?) -> MutationResult
     {
         let diff: MutationDiff
             
@@ -127,7 +127,7 @@ extension Storable
     @discardableResult
     func store(in storage: inout ByTypeStorage) -> Self
     {
-        storage.storeValue(self)
+        storage.store(self)
         
         //---
         
@@ -141,7 +141,7 @@ public
 extension ByTypeStorage
 {
     @discardableResult
-    func removeValue<T: Storable>(of _: T.Type) -> MutationResult?
+    func removeValue<T: Storable>(ofType _: T.Type) -> MutationResult?
     {
         guard
             hasValue(of: T.self)
@@ -199,7 +199,7 @@ extension Storable
     @discardableResult
     func remove(from storage: inout ByTypeStorage) -> Self
     {
-        storage.removeValue(of: type(of: self))
+        storage.removeValue(ofType: type(of: self))
         
         //---
         
@@ -210,7 +210,7 @@ extension Storable
     static
     func remove(from storage: inout ByTypeStorage) -> Self.Type
     {
-        storage.removeValue(of: self)
+        storage.removeValue(ofType: self)
         
         //---
         

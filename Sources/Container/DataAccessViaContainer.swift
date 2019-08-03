@@ -31,7 +31,7 @@ extension ByTypeStorage.Container
 {
     func value<T: Storable>(of _: T.Type) -> T?
     {
-        return storage.itself.value(of: T.self)
+        return storage.itself.value(ofType: T.self)
     }
 
     func value<T>(forKey _: T.Type) -> Storable?
@@ -87,7 +87,7 @@ extension ByTypeStorage.Container
 {
     func storeValue<T: Storable>(_ value: T?)
     {
-        storage << storage.itself.storeValue(value)
+        storage << storage.itself.store(value)
     }
 }
 
@@ -114,7 +114,7 @@ extension ByTypeStorage.Container
 {
     func removeValue<T: Storable>(of _: T.Type)
     {
-        storage << storage.itself.removeValue(of: T.self)
+        storage << storage.itself.removeValue(ofType: T.self)
     }
 
     func removeValue<T>(forKey _: T.Type)
