@@ -38,12 +38,11 @@ struct Four: CustomKeyed
     typealias TheKey = Float
 }
 
-struct Five
-{ }
+struct Five { }
 
 //---
 
-class Main: XCTestCase
+class AllTests: XCTestCase
 {
     func testKeyConversion()
     {
