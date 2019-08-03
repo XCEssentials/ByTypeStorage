@@ -39,7 +39,7 @@ extension ByTypeStorage.Container
         return storage.itself.value(forKey: T.self)
     }
 
-    //===
+    //---
 
     func hasValue<T: Storable>(of _: T.Type) -> Bool
     {
@@ -52,7 +52,7 @@ extension ByTypeStorage.Container
     }
 }
 
-//===
+//---
 
 public
 extension Storable
@@ -63,7 +63,7 @@ extension Storable
         return storage.value(of: self)
     }
 
-    //===
+    //---
 
     static
     func presented(in storage: ByTypeStorage.Container) -> Bool
@@ -91,7 +91,7 @@ extension ByTypeStorage.Container
     }
 }
 
-//===
+//---
 
 public
 extension Storable
@@ -123,7 +123,7 @@ extension ByTypeStorage.Container
     }
 }
 
-//===
+//---
 
 public
 extension Storable

@@ -34,7 +34,7 @@ func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
     return storage.value(ofType: T.self)
 }
 
-//===
+//---
 
 public
 func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
@@ -42,7 +42,7 @@ func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
     target = pair.1.value(ofType: T.self)
 }
 
-//===
+//---
 
 public
 func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?

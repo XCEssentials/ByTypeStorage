@@ -3,7 +3,7 @@ import XCTest
 @testable
 import XCEByTypeStorage
 
-//===
+//---
 
 protocol CustomKeyed: Storable
 {
@@ -19,10 +19,9 @@ extension CustomKeyed
     }
 }
 
-//===
+//---
 
-struct One: Storable
-{ }
+struct One: Storable { }
 
 struct Two: CustomKeyed
 {
@@ -42,7 +41,7 @@ struct Four: CustomKeyed
 struct Five
 { }
 
-//===
+//---
 
 class Main: XCTestCase
 {
@@ -69,7 +68,7 @@ class Main: XCTestCase
         )
     }
     
-    //===
+    //---
     
     var storage: ByTypeStorage!
     

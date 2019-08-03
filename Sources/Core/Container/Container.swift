@@ -36,7 +36,7 @@ extension ByTypeStorage
             self.storage = (storage, nil)
         }
         
-        //===
+        //---
         
         public
         typealias Content =
@@ -52,7 +52,7 @@ extension ByTypeStorage
             }
         }
         
-        //===
+        //---
         
         /**
          Id helps to avoid dublicates. Only one subscription is allowed per observer.
@@ -61,7 +61,7 @@ extension ByTypeStorage
     }
 }
 
-//===
+//---
 
 public
 protocol StorageInitializable: class
@@ -69,7 +69,7 @@ protocol StorageInitializable: class
     init(with storage: ByTypeStorage.Container)
 }
 
-//===
+//---
 
 public
 protocol StorageBindable: class

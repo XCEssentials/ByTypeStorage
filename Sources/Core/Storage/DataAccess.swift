@@ -39,7 +39,7 @@ extension ByTypeStorage
         return data[Key.derived(from: T.self)]
     }
     
-    //===
+    //---
     
     func hasValue<T: Storable>(of _: T.Type) -> Bool
     {
@@ -52,7 +52,7 @@ extension ByTypeStorage
     }
 }
 
-//===
+//---
 
 public
 extension Storable
@@ -63,7 +63,7 @@ extension Storable
         return storage.value(ofType: self)
     }
 
-    //===
+    //---
 
     static
     func presented(in storage: ByTypeStorage) -> Bool
@@ -119,7 +119,7 @@ extension ByTypeStorage
     }
 }
 
-//===
+//---
 
 public
 extension Storable
@@ -191,7 +191,7 @@ extension ByTypeStorage
     }
 }
 
-//===
+//---
 
 public
 extension Storable

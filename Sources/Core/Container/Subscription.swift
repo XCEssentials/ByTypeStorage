@@ -30,7 +30,7 @@ protocol StorageObserver: class
     func update(with storage: ByTypeStorage, diff: ByTypeStorage.MutationDiff)
 }
 
-//===
+//---
 
 extension ByTypeStorage.Container
 {
@@ -86,7 +86,7 @@ extension ByTypeStorage.Container.Subscription
     }
 }
 
-//===
+//---
 
 public
 extension ByTypeStorage.Container
@@ -101,7 +101,7 @@ extension ByTypeStorage.Container
     }
 }
 
-//===
+//---
 
 extension ByTypeStorage.Container
 {

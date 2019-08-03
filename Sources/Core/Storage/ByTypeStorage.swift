@@ -30,7 +30,7 @@ struct ByTypeStorage
     public
     init() {}
     
-    //===
+    //---
     
     typealias Key = String
     
