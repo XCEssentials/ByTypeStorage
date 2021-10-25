@@ -28,46 +28,89 @@ infix operator /<
 
 // MARK: - GET operators
 
+/// Fetch value of type `T` from `storage`, if present.
 public
 func << <T: Storable>(_: T.Type, storage: ByTypeStorage) -> T?
 {
-    return storage.value(ofType: T.self)
+    storage[T.self]
 }
 
-//---
-
+/// Fetch value of type `T` from `storage`, if present.
+@MainActor
 public
-func << <T: Storable>(target: inout T?, pair: (T.Type, ByTypeStorage))
+func << <T: Storable>(_: T.Type, storage: StorageDispatcher) -> T?
 {
-    target = pair.1.value(ofType: T.self)
+    storage[T.self]
 }
 
 //---
 
+/// Fetch value of type `T` from `storage`, if present.
 public
 func >> <T: Storable>(storage: ByTypeStorage, _: T.Type) -> T?
 {
-    return storage.value(ofType: T.self)
+    storage[T.self]
+}
+
+/// Fetch value of type `T` from `storage`, if present.
+@MainActor
+public
+func >> <T: Storable>(storage: StorageDispatcher, _: T.Type) -> T?
+{
+    storage[T.self]
 }
 
 // MARK: - SET operators
 
+/// Store `value` in `storage`.
+@discardableResult
 public
-func << <T: Storable>(storage: inout ByTypeStorage, value: T?)
+func << <T: Storable>(storage: inout ByTypeStorage, value: T?) -> ByTypeStorage.Mutation
 {
     storage.store(value)
 }
 
+/// Store `value` in `storage`.
+@MainActor
+@discardableResult
 public
-func >> <T: Storable>(value: T?, storage: inout ByTypeStorage)
+func << <T: Storable>(storage: StorageDispatcher, value: T?) -> [ByTypeStorage.Mutation]
+{
+    storage.store(value)
+}
+
+/// Store `value` in `storage`.
+@discardableResult
+public
+func >> <T: Storable>(value: T?, storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
+{
+    storage.store(value)
+}
+
+/// Store `value` in `storage`.
+@MainActor
+@discardableResult
+public
+func >> <T: Storable>(value: T?, storage: StorageDispatcher) -> [ByTypeStorage.Mutation]
 {
     storage.store(value)
 }
 
 // MARK: - REMOVE operators
 
+/// Remove value of type `T` from `storage`.
+@discardableResult
 public
-func /< <T: Storable>(storage: inout ByTypeStorage, _: T.Type)
+func /< <T: Storable>(storage: inout ByTypeStorage, _: T.Type) -> ByTypeStorage.Mutation
+{
+    storage.removeValue(ofType: T.self)
+}
+
+/// Remove value of type `T` from `storage`.
+@MainActor
+@discardableResult
+public
+func /< <T: Storable>(storage: StorageDispatcher, _: T.Type) -> [ByTypeStorage.Mutation]
 {
     storage.removeValue(ofType: T.self)
 }

@@ -1,9 +1,13 @@
-// swift-tools-version:5.0
+// swift-tools-version:5.5
 
 import PackageDescription
 
 let package = Package(
     name: "XCEByTypeStorage",
+    platforms: [
+        .macOS(.v12),
+        .iOS(.v15)
+    ],
     products: [
         .library(
             name: "XCEByTypeStorage",
@@ -24,6 +28,5 @@ let package = Package(
             ],
             path: "Tests/AllTests"
         ),
-    ],
-    swiftLanguageVersions: [.v5]
+    ]
 )

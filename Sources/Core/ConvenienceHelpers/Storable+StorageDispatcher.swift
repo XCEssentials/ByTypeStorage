@@ -24,25 +24,58 @@
  
  */
 
-extension ByTypeStorage.Key
+// MARK: - GET data
+
+public
+extension Storable
 {
+    @MainActor
     static
-    func keyType<T>(for _: T.Type) -> Any.Type
+    func from(_ storage: StorageDispatcher) -> Self?
     {
-        if
-            let StorableT = T.self as? Storable.Type
-        {
-            return StorableT.key
-        }
-        else
-        {
-            return T.self
-        }
+        storage[self]
+    }
+
+    //---
+
+    @MainActor
+    static
+    func isPresent(in storage: StorageDispatcher) -> Bool
+    {
+        storage.hasValue(self)
+    }
+}
+
+// MARK: - SET data
+
+public
+extension Storable
+{
+    @MainActor
+    @discardableResult
+    func store(in storage: StorageDispatcher) -> [ByTypeStorage.Mutation]
+    {
+        storage.store(self)
+    }
+}
+
+// MARK: - REMOVE data
+
+public
+extension Storable
+{
+    @MainActor
+    @discardableResult
+    func remove(from storage: inout StorageDispatcher) -> [ByTypeStorage.Mutation]
+    {
+        storage.removeValue(ofType: Self.self)
     }
     
+    @MainActor
+    @discardableResult
     static
-    func derived<T>(from _: T.Type) -> ByTypeStorage.Key
+    func remove(from storage: inout StorageDispatcher) -> [ByTypeStorage.Mutation]
     {
-        return ByTypeStorage.Key(reflecting: keyType(for: T.self))
+        storage.removeValue(ofType: self)
     }
 }
