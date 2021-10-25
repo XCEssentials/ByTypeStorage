@@ -5,62 +5,34 @@ import XCEByTypeStorage
 
 //---
 
-struct One: Storable { }
-
-struct Two: Storable
+struct One: SomeSelfStorable, SomeKey
 {
-    static
-    var key: ByTypeStorage.Key
-    {
-        return "123"
-    }
+    var val: Int
 }
 
-struct Three: Storable
+enum TheKey: SomeSelfStorable, SomeKey {}
+
+struct Two: SomeStorableByKey
 {
-    static
-    var key: ByTypeStorage.Key
-    {
-        return "123"
-    }
+    typealias Key = TheKey
 }
 
-struct Four: Storable
+struct Three: SomeStorable
 {
-    static
-    var key: ByTypeStorage.Key
-    {
-        return "456"
-    }
+    typealias Key = TheKey
 }
 
 //---
 
 class AllTests: XCTestCase
 {
-    func testKeyConversion()
-    {
-        XCTAssert(
-            One.key.contains("One")
-        )
-        
-        XCTAssert(
-            Two.key.contains("123")
-        )
-        
-        XCTAssert(
-            Three.key.contains("123")
-        )
-        
-        XCTAssert(
-            Four.key.contains("456")
-        )
-    }
-    
-    //---
-    
     var storage: ByTypeStorage!
-    
+}
+
+//---
+
+extension AllTests
+{
     override
     func setUp()
     {
@@ -79,5 +51,36 @@ class AllTests: XCTestCase
         //---
         
         super.tearDown()
+    }
+}
+
+//---
+
+extension AllTests
+{
+    func test_keyConversion()
+    {
+        XCTAssert(
+            One.Key.key.contains("One")
+        )
+        
+        XCTAssert(
+            Two.Key.key.contains("TheKey")
+        )
+        
+        XCTAssert(
+            Three.Key.key.contains("TheKey")
+        )
+    }
+    
+    func test_storingValue()
+    {
+        let value = One(val: 5)
+        storage.store(value)
+        
+        XCTAssertEqual(
+            storage[One.self]?.val,
+            .some(5)
+        )
     }
 }
