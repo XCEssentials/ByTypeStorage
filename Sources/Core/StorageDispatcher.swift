@@ -38,11 +38,11 @@ class StorageDispatcher
     var storage: ByTypeStorage
     
     private
-    let _mutations = PassthroughSubject<MutationNotice, Never>()
+    let _outcomes = PassthroughSubject<ActionOutcome, Never>()
     
     public
     lazy
-    var mutations: AnyPublisher<MutationNotice, Never> = _mutations.eraseToAnyPublisher()
+    var outcomes: AnyPublisher<ActionOutcome, Never> = _outcomes.eraseToAnyPublisher()
     
     //---
     
@@ -60,7 +60,7 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    enum MutationNotice
+    enum ActionOutcome
     {
         /// Mutation has been succesfully processed and already applied to the `storage`.
         ///
@@ -129,7 +129,7 @@ extension StorageDispatcher
         }
         catch
         {
-            _mutations.send(
+            _outcomes.send(
                 .rejected(
                     reason: error,
                     env: .init(
@@ -151,7 +151,7 @@ extension StorageDispatcher
         
         //---
         
-        _mutations.send(
+        _outcomes.send(
             .processed(
                 storage: storage,
                 mutations: mutationsToReport,
