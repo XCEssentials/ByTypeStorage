@@ -53,9 +53,13 @@ extension Storable
 {
     @MainActor
     @discardableResult
-    func store(in storage: StorageDispatcher) -> [ByTypeStorage.Mutation]
-    {
-        storage.store(self)
+    func store(
+        scope: String = #file,
+        context: String = #function,
+        in storage: StorageDispatcher
+    ) -> [ByTypeStorage.Mutation] {
+        
+        storage.store(scope: scope, context: context, self)
     }
 }
 
@@ -66,16 +70,24 @@ extension Storable
 {
     @MainActor
     @discardableResult
-    func remove(from storage: inout StorageDispatcher) -> [ByTypeStorage.Mutation]
-    {
-        storage.removeValue(ofType: Self.self)
+    func remove(
+        scope: String = #file,
+        context: String = #function,
+        from storage: inout StorageDispatcher
+    ) -> [ByTypeStorage.Mutation] {
+        
+        storage.removeValue(scope: scope, context: context, ofType: Self.self)
     }
     
     @MainActor
     @discardableResult
     static
-    func remove(from storage: inout StorageDispatcher) -> [ByTypeStorage.Mutation]
-    {
-        storage.removeValue(ofType: self)
+    func remove(
+        scope: String = #file,
+        context: String = #function,
+        from storage: inout StorageDispatcher
+    ) -> [ByTypeStorage.Mutation] {
+        
+        storage.removeValue(scope: scope, context: context, ofType: self)
     }
 }
