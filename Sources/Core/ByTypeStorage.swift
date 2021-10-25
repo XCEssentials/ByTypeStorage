@@ -32,10 +32,8 @@ struct ByTypeStorage
     
     //---
     
-    public
-    typealias Key = String
-    
-    var data = [Key: Storable]()
+    //internal
+    var data = [String: SomeStorable]()
 }
 
 // MARK: - Nested types
@@ -45,12 +43,12 @@ extension ByTypeStorage
 {
     enum Mutation
     {
-        case addition(key: Storable.Type, newValue: Any)
-        case update(key: Storable.Type, oldValue: Any, newValue: Any)
-        case removal(key: Storable.Type, oldValue: Any)
+        case addition(key: SomeKey.Type, newValue: SomeStorable)
+        case update(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
+        case removal(key: SomeKey.Type, oldValue: SomeStorable)
         
         /// No removal operation has been performed, because no such key has been found.
-        case nothingToRemove(key: Storable.Type)
+        case nothingToRemove(key: SomeKey.Type)
     }
 }
 
@@ -59,16 +57,26 @@ extension ByTypeStorage
 public
 extension ByTypeStorage
 {
-    subscript<T: Storable>(_ keyType: T.Type) -> T?
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
     {
-        data[T.key] as? T
+        data[V.key] as? V
+    }
+    
+    subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
+    {
+        data[K.name]
     }
     
     //---
     
-    func hasValue<T: Storable>(_: T.Type) -> Bool
+    func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
     {
-        self[T.self] != nil
+        self[V.self] != nil
+    }
+    
+    func hasValue<K: SomeKey>(withKey keyType: K.Type) -> Bool
+    {
+        self[K.self] != nil
     }
 }
 
@@ -79,41 +87,41 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func store<T: Storable>(_ value: T?) -> Mutation
+    func store<V: SomeStorableByKey>(_ value: V?) -> Mutation
     {
-        switch (self[T.self], value)
+        switch (self[V.Key.self], value)
         {
             case (.none, .some(let newValue)):
                 
-                data[T.key] = newValue
+                data[V.Key.name] = newValue
                 
                 //---
                 
-                return .addition(key: T.self, newValue: newValue)
+                return .addition(key: V.Key.self, newValue: newValue)
                 
             //---
                 
             case (.some(let oldValue), .some(let newValue)):
                 
-                data[T.key] = newValue
+                data[V.Key.name] = newValue
                 
                 //---
                 
-                return .update(key: T.self, oldValue: oldValue, newValue: newValue)
+                return .update(key: V.Key.self, oldValue: oldValue, newValue: newValue)
                 
             //---
                
             case (.some(let oldValue), .none):
                 
-                data.removeValue(forKey: T.key)
+                data.removeValue(forKey: V.Key.name) // NOTE: this is SDK method on Dictionary!
                 
                 //---
                 
-                return .removal(key: T.self, oldValue: oldValue)
+                return .removal(key: V.Key.self, oldValue: oldValue)
                 
             case (.none, .none):
                 
-                return .nothingToRemove(key: T.self)
+                return .nothingToRemove(key: V.Key.self)
         }
     }
 }
@@ -125,8 +133,21 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func removeValue<T: Storable>(ofType _: T.Type) -> Mutation
+    func removeValue<K: SomeKey>(forKey keyType: K.Type) -> Mutation
     {
-        store(T?.none)
+        switch self[K.self]
+        {
+            case .some(let oldValue):
+                
+                data.removeValue(forKey: K.name)
+                
+                //---
+                
+                return .removal(key: K.self, oldValue: oldValue)
+                
+            case .none:
+                
+                return .nothingToRemove(key: K.self)
+        }
     }
 }

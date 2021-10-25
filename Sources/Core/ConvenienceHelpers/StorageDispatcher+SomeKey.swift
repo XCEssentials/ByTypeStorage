@@ -27,67 +27,31 @@
 // MARK: - GET data
 
 public
-extension Storable
+extension StorageDispatcher
 {
-    @MainActor
-    static
-    func from(_ storage: StorageDispatcher) -> Self?
+    subscript<K: SomeKey>(_: K.Type) -> SomeStorable?
     {
-        storage[self]
+        storage[K.self]
     }
-
-    //---
-
-    @MainActor
-    static
-    func isPresent(in storage: StorageDispatcher) -> Bool
+    
+    func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
     {
-        storage.hasValue(self)
-    }
-}
-
-// MARK: - SET data
-
-public
-extension Storable
-{
-    @MainActor
-    @discardableResult
-    func store(
-        scope: String = #file,
-        context: String = #function,
-        in storage: StorageDispatcher
-    ) -> [ByTypeStorage.Mutation] {
-        
-        storage.store(scope: scope, context: context, self)
+        storage[K.self] != nil
     }
 }
 
 // MARK: - REMOVE data
 
 public
-extension Storable
+extension StorageDispatcher
 {
-    @MainActor
     @discardableResult
-    func remove(
+    func removeValue<K: SomeKey>(
         scope: String = #file,
         context: String = #function,
-        from storage: inout StorageDispatcher
+        forKey _: K.Type
     ) -> [ByTypeStorage.Mutation] {
         
-        storage.removeValue(scope: scope, context: context, ofType: Self.self)
-    }
-    
-    @MainActor
-    @discardableResult
-    static
-    func remove(
-        scope: String = #file,
-        context: String = #function,
-        from storage: inout StorageDispatcher
-    ) -> [ByTypeStorage.Mutation] {
-        
-        storage.removeValue(scope: scope, context: context, ofType: self)
+        mutate(scope: scope, context: context) { $0.removeValue(forKey: K.self) }
     }
 }

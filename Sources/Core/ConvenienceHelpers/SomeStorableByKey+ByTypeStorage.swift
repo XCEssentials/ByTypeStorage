@@ -27,10 +27,10 @@
 // MARK: - GET data
 
 public
-extension Storable
+extension SomeStorableByKey
 {
     static
-    func from(_ storage: ByTypeStorage) -> Self?
+    func fetch(from storage: ByTypeStorage) -> Self?
     {
         storage[self]
     }
@@ -40,37 +40,20 @@ extension Storable
     static
     func isPresent(in storage: ByTypeStorage) -> Bool
     {
-        storage.hasValue(self)
+        storage.hasValue(ofType: self)
     }
 }
 
 // MARK: - SET data
 
 public
-extension Storable
+extension SomeStorableByKey
 {
     @discardableResult
-    func store(in storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
-    {
+    func store(
+        in storage: inout ByTypeStorage
+    ) -> ByTypeStorage.Mutation {
+        
         storage.store(self)
-    }
-}
-
-// MARK: - REMOVE data
-
-public
-extension Storable
-{
-    @discardableResult
-    func remove(from storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
-    {
-        storage.removeValue(ofType: Self.self)
-    }
-    
-    @discardableResult
-    static
-    func remove(from storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
-    {
-        storage.removeValue(ofType: self)
     }
 }
