@@ -5,10 +5,8 @@ import XCEByTypeStorage
 
 //---
 
-struct One: SomeStorableByKey, SomeKey
+struct One: SomeStorableByKey, SomeSelfKey
 {
-    typealias Key = Self
-    
     var val: Int
 }
 
