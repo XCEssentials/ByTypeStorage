@@ -5,19 +5,21 @@ import XCEByTypeStorage
 
 //---
 
-struct One: SomeSelfStorable, SomeKey
+struct One: SomeStorableByKey, SomeKey
 {
+    typealias Key = Self
+    
     var val: Int
 }
 
-enum TheKey: SomeSelfStorable, SomeKey {}
+enum TheKey: SomeKey {}
 
 struct Two: SomeStorableByKey
 {
     typealias Key = TheKey
 }
 
-struct Three: SomeStorable
+struct Three: SomeStorableByKey
 {
     typealias Key = TheKey
 }
@@ -61,15 +63,15 @@ extension AllTests
     func test_keyConversion()
     {
         XCTAssert(
-            One.Key.key.contains("One")
+            One.Key.name.contains("One")
         )
         
         XCTAssert(
-            Two.Key.key.contains("TheKey")
+            Two.Key.name.contains("TheKey")
         )
         
         XCTAssert(
-            Three.Key.key.contains("TheKey")
+            Three.Key.name.contains("TheKey")
         )
     }
     
