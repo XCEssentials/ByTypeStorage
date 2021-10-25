@@ -27,7 +27,7 @@
 // MARK: - GET data
 
 public
-extension Storable
+extension SomeStorable
 {
     static
     func from(_ storage: ByTypeStorage) -> Self?
@@ -47,7 +47,7 @@ extension Storable
 // MARK: - SET data
 
 public
-extension Storable
+extension SomeStorable
 {
     @discardableResult
     func store(in storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
@@ -59,7 +59,7 @@ extension Storable
 // MARK: - REMOVE data
 
 public
-extension Storable
+extension SomeStorable
 {
     @discardableResult
     func remove(from storage: inout ByTypeStorage) -> ByTypeStorage.Mutation

@@ -24,52 +24,23 @@
  
  */
 
-// MARK: - GET data
-
+/**
+ Conformance to this protocol allows an instance of 'Self' type to be stored in any 'ByTypeStorage' instance.
+ */
 public
-extension StorageDispatcher
+protocol SomeStorable {}
+
+// MARK: - Internal helpers
+
+//internal
+extension SomeStorable
 {
-    subscript<T: Storable>(_ keyType: T.Type) -> T?
+    /**
+     By default, 'ByTypeStorage' uses this type itself as a key for storing an instance of this type.
+     */
+    static
+    var key: ByTypeStorage.Key
     {
-        storage[T.self]
-    }
-    
-    //---
-    
-    func hasValue<T: Storable>(_: T.Type) -> Bool
-    {
-        storage.hasValue(T.self)
-    }
-}
-
-// MARK: - SET data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func store<T: Storable>(
-        scope: String = #file,
-        context: String = #function,
-        _ value: T?
-    ) -> [ByTypeStorage.Mutation] {
-        
-        mutate(scope: scope, context: context) { $0.store(value) }
-    }
-}
-
-// MARK: - REMOVE data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func removeValue<T: Storable>(
-        scope: String = #file,
-        context: String = #function,
-        ofType _: T.Type
-    ) -> [ByTypeStorage.Mutation] {
-        
-        mutate(scope: scope, context: context) { $0.store(T?.none) }
+        .init(reflecting: self)
     }
 }

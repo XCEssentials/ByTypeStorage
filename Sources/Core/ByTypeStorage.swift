@@ -35,7 +35,7 @@ struct ByTypeStorage
     public
     typealias Key = String
     
-    var data = [Key: Storable]()
+    var data = [Key: SomeStorable]()
 }
 
 // MARK: - Nested types
@@ -45,12 +45,12 @@ extension ByTypeStorage
 {
     enum Mutation
     {
-        case addition(key: Storable.Type, newValue: Any)
-        case update(key: Storable.Type, oldValue: Any, newValue: Any)
-        case removal(key: Storable.Type, oldValue: Any)
+        case addition(key: SomeStorable.Type, newValue: Any)
+        case update(key: SomeStorable.Type, oldValue: Any, newValue: Any)
+        case removal(key: SomeStorable.Type, oldValue: Any)
         
         /// No removal operation has been performed, because no such key has been found.
-        case nothingToRemove(key: Storable.Type)
+        case nothingToRemove(key: SomeStorable.Type)
     }
 }
 
@@ -59,14 +59,14 @@ extension ByTypeStorage
 public
 extension ByTypeStorage
 {
-    subscript<T: Storable>(_ keyType: T.Type) -> T?
+    subscript<T: SomeStorable>(_ keyType: T.Type) -> T?
     {
         data[T.key] as? T
     }
     
     //---
     
-    func hasValue<T: Storable>(_: T.Type) -> Bool
+    func hasValue<T: SomeStorable>(_: T.Type) -> Bool
     {
         self[T.self] != nil
     }
@@ -79,7 +79,7 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func store<T: Storable>(_ value: T?) -> Mutation
+    func store<T: SomeStorable>(_ value: T?) -> Mutation
     {
         switch (self[T.self], value)
         {
@@ -125,7 +125,7 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func removeValue<T: Storable>(ofType _: T.Type) -> Mutation
+    func removeValue<T: SomeStorable>(ofType _: T.Type) -> Mutation
     {
         store(T?.none)
     }

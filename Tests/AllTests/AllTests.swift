@@ -5,9 +5,9 @@ import XCEByTypeStorage
 
 //---
 
-struct One: Storable { }
+struct One: SomeStorable { }
 
-struct Two: Storable
+struct Two: SomeStorable
 {
     static
     var key: ByTypeStorage.Key
@@ -16,7 +16,7 @@ struct Two: Storable
     }
 }
 
-struct Three: Storable
+struct Three: SomeStorable
 {
     static
     var key: ByTypeStorage.Key
@@ -25,7 +25,7 @@ struct Three: Storable
     }
 }
 
-struct Four: Storable
+struct Four: SomeStorable
 {
     static
     var key: ByTypeStorage.Key
