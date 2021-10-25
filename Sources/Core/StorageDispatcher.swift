@@ -100,20 +100,20 @@ public
 extension StorageDispatcher
 {
     @discardableResult
-    func mutate(
+    func process(
         scope: String = #file,
         context: String = #function,
-        via handler: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
+        action: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
     ) rethrows -> [ByTypeStorage.Mutation] {
 
-        try mutate(scope: scope, context: context) { try [handler(&$0)] }
+        try process(scope: scope, context: context) { try [action(&$0)] }
     }
     
     @discardableResult
-    func mutate(
+    func process(
         scope: String = #file,
         context: String = #function,
-        via handler: (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+        action: (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
     ) rethrows -> [ByTypeStorage.Mutation] {
         
         // we want to avoid partial changes to be applied in case the handler throws
@@ -125,7 +125,7 @@ extension StorageDispatcher
         
         do
         {
-            mutationsToReport = try handler(&tmpCopyStorage)
+            mutationsToReport = try action(&tmpCopyStorage)
         }
         catch
         {
