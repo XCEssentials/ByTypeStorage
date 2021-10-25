@@ -5,40 +5,34 @@ import XCEByTypeStorage
 
 //---
 
-protocol CustomKeyed: Storable
-{
-    associatedtype TheKey
-}
+struct One: Storable { }
 
-extension CustomKeyed
+struct Two: Storable
 {
     static
-    var key: Any.Type
+    var key: ByTypeStorage.Key
     {
-        return TheKey.self
+        return "123"
     }
 }
 
-//---
-
-struct One: Storable { }
-
-struct Two: CustomKeyed
+struct Three: Storable
 {
-    typealias TheKey = Int
+    static
+    var key: ByTypeStorage.Key
+    {
+        return "123"
+    }
 }
 
-struct Three: CustomKeyed
+struct Four: Storable
 {
-    typealias TheKey = Int
+    static
+    var key: ByTypeStorage.Key
+    {
+        return "456"
+    }
 }
-
-struct Four: CustomKeyed
-{
-    typealias TheKey = Float
-}
-
-struct Five { }
 
 //---
 
@@ -47,23 +41,19 @@ class AllTests: XCTestCase
     func testKeyConversion()
     {
         XCTAssert(
-            ByTypeStorage.Key.derived(from: One.self).contains("One")
+            One.key.contains("One")
         )
         
         XCTAssert(
-            ByTypeStorage.Key.derived(from: Two.self).contains("Int")
+            Two.key.contains("123")
         )
         
         XCTAssert(
-            ByTypeStorage.Key.derived(from: Three.self).contains("Int")
+            Three.key.contains("123")
         )
         
         XCTAssert(
-            ByTypeStorage.Key.derived(from: Four.self).contains("Float")
-        )
-        
-        XCTAssert(
-            ByTypeStorage.Key.derived(from: Five.self).contains("Five")
+            Four.key.contains("456")
         )
     }
     

@@ -7,6 +7,11 @@ let package = Package(
     platforms: [
         .macOS(.v10_11),
     ],
+    products: [
+        .executable(
+            name: "ByTypeStorageSetup",
+            targets: ["ByTypeStorageSetup"])
+    ],
     dependencies: [
         .package(url: "https://github.com/kylef/PathKit", from: "1.0.0"),
         .package(url: "https://github.com/XCEssentials/RepoConfigurator", from: "3.0.0")
@@ -15,7 +20,7 @@ let package = Package(
         .target(
             name: "ByTypeStorageSetup",
             dependencies: ["XCERepoConfigurator", "PathKit"],
-            path: ".",
+            path: "Sources",
             sources: ["main.swift"]
         )
     ]

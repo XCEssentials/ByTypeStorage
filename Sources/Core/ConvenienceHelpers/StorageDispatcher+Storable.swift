@@ -24,15 +24,44 @@
  
  */
 
+// MARK: - GET data
+
 public
-struct ByTypeStorage
+extension StorageDispatcher
 {
-    public
-    init() {}
+    subscript<T: Storable>(_ keyType: T.Type) -> T?
+    {
+        storage[T.self]
+    }
     
     //---
     
-    typealias Key = String
-    
-    var data = [Key: Storable]()
+    func hasValue<T: Storable>(_: T.Type) -> Bool
+    {
+        storage.hasValue(T.self)
+    }
+}
+
+// MARK: - SET data
+
+public
+extension StorageDispatcher
+{
+    @discardableResult
+    func store<T: Storable>(_ value: T?) -> [ByTypeStorage.Mutation]
+    {
+        mutate { $0.store(value) }
+    }
+}
+
+// MARK: - REMOVE data
+
+public
+extension StorageDispatcher
+{
+    @discardableResult
+    func removeValue<T: Storable>(ofType _: T.Type) -> [ByTypeStorage.Mutation]
+    {
+        mutate { $0.store(T?.none) }
+    }
 }
