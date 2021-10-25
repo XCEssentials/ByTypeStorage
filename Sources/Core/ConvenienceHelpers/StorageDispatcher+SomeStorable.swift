@@ -29,47 +29,8 @@
 public
 extension StorageDispatcher
 {
-    subscript<T: SomeStorable>(_ keyType: T.Type) -> T?
+    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
     {
-        storage[T.self]
-    }
-    
-    //---
-    
-    func hasValue<T: SomeStorable>(_: T.Type) -> Bool
-    {
-        storage.hasValue(T.self)
-    }
-}
-
-// MARK: - SET data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func store<T: SomeStorable>(
-        scope: String = #file,
-        context: String = #function,
-        _ value: T?
-    ) -> [ByTypeStorage.Mutation] {
-        
-        mutate(scope: scope, context: context) { $0.store(value) }
-    }
-}
-
-// MARK: - REMOVE data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func removeValue<T: SomeStorable>(
-        scope: String = #file,
-        context: String = #function,
-        ofType _: T.Type
-    ) -> [ByTypeStorage.Mutation] {
-        
-        mutate(scope: scope, context: context) { $0.store(T?.none) }
+        storage.data.values.first { $0 is V } != nil
     }
 }

@@ -24,15 +24,20 @@
  
  */
 
-// MARK: - GET data
+// MARK: - REMOVE data
 
 public
-extension SomeStorable
+extension SomeKey
 {
     @MainActor
+    @discardableResult
     static
-    func isPresent(in storage: StorageDispatcher) -> Bool
-    {
-        storage.hasValue(ofType: self)
+    func remove(
+        scope: String = #file,
+        context: String = #function,
+        from storage: StorageDispatcher
+    ) -> [ByTypeStorage.Mutation] {
+        
+        storage.removeValue(scope: scope, context: context, forKey: Self.self)
     }
 }

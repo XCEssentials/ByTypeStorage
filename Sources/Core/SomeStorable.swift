@@ -29,18 +29,3 @@
  */
 public
 protocol SomeStorable {}
-
-// MARK: - Internal helpers
-
-//internal
-extension SomeStorable
-{
-    /**
-     By default, 'ByTypeStorage' uses this type itself as a key for storing an instance of this type.
-     */
-    static
-    var key: ByTypeStorage.Key
-    {
-        .init(reflecting: self)
-    }
-}

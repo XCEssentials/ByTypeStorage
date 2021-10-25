@@ -24,15 +24,5 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension SomeStorable
-{
-    @MainActor
-    static
-    func isPresent(in storage: StorageDispatcher) -> Bool
-    {
-        storage.hasValue(ofType: self)
-    }
-}
+protocol SomeSelfStorable: SomeStorableByKey where Key == Self {}

@@ -27,12 +27,33 @@
 // MARK: - GET data
 
 public
-extension SomeStorable
+extension StorageDispatcher
 {
-    @MainActor
-    static
-    func isPresent(in storage: StorageDispatcher) -> Bool
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
     {
-        storage.hasValue(ofType: self)
+        storage[V.self]
+    }
+    
+    //---
+    
+    func hasValue<V: SomeStorableByKey>(ofType _: V.Type) -> Bool
+    {
+        storage[V.self] != nil
+    }
+}
+
+// MARK: - SET data
+
+public
+extension StorageDispatcher
+{
+    @discardableResult
+    func store<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        _ value: V?
+    ) -> [ByTypeStorage.Mutation] {
+        
+        mutate(scope: scope, context: context) { $0.store(value) }
     }
 }

@@ -30,7 +30,7 @@ infix operator /<
 
 /// Fetch value of type `T` from `storage`, if present.
 public
-func << <T: SomeStorable>(_: T.Type, storage: ByTypeStorage) -> T?
+func << <T: SomeStorableByKey>(_: T.Type, storage: ByTypeStorage) -> T?
 {
     storage[T.self]
 }
@@ -38,7 +38,7 @@ func << <T: SomeStorable>(_: T.Type, storage: ByTypeStorage) -> T?
 /// Fetch value of type `T` from `storage`, if present.
 @MainActor
 public
-func << <T: SomeStorable>(_: T.Type, storage: StorageDispatcher) -> T?
+func << <T: SomeStorableByKey>(_: T.Type, storage: StorageDispatcher) -> T?
 {
     storage[T.self]
 }
@@ -47,7 +47,7 @@ func << <T: SomeStorable>(_: T.Type, storage: StorageDispatcher) -> T?
 
 /// Fetch value of type `T` from `storage`, if present.
 public
-func >> <T: SomeStorable>(storage: ByTypeStorage, _: T.Type) -> T?
+func >> <T: SomeStorableByKey>(storage: ByTypeStorage, _: T.Type) -> T?
 {
     storage[T.self]
 }
@@ -55,7 +55,7 @@ func >> <T: SomeStorable>(storage: ByTypeStorage, _: T.Type) -> T?
 /// Fetch value of type `T` from `storage`, if present.
 @MainActor
 public
-func >> <T: SomeStorable>(storage: StorageDispatcher, _: T.Type) -> T?
+func >> <T: SomeStorableByKey>(storage: StorageDispatcher, _: T.Type) -> T?
 {
     storage[T.self]
 }
@@ -65,7 +65,7 @@ func >> <T: SomeStorable>(storage: StorageDispatcher, _: T.Type) -> T?
 /// Store `value` in `storage`.
 @discardableResult
 public
-func << <T: SomeStorable>(storage: inout ByTypeStorage, value: T?) -> ByTypeStorage.Mutation
+func << <T: SomeStorableByKey>(storage: inout ByTypeStorage, value: T?) -> ByTypeStorage.Mutation
 {
     storage.store(value)
 }
@@ -74,7 +74,7 @@ func << <T: SomeStorable>(storage: inout ByTypeStorage, value: T?) -> ByTypeStor
 @MainActor
 @discardableResult
 public
-func << <T: SomeStorable>(storage: StorageDispatcher, value: T?) -> [ByTypeStorage.Mutation]
+func << <T: SomeStorableByKey>(storage: StorageDispatcher, value: T?) -> [ByTypeStorage.Mutation]
 {
     storage.store(value)
 }
@@ -82,7 +82,7 @@ func << <T: SomeStorable>(storage: StorageDispatcher, value: T?) -> [ByTypeStora
 /// Store `value` in `storage`.
 @discardableResult
 public
-func >> <T: SomeStorable>(value: T?, storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
+func >> <T: SomeStorableByKey>(value: T?, storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
 {
     storage.store(value)
 }
@@ -91,7 +91,7 @@ func >> <T: SomeStorable>(value: T?, storage: inout ByTypeStorage) -> ByTypeStor
 @MainActor
 @discardableResult
 public
-func >> <T: SomeStorable>(value: T?, storage: StorageDispatcher) -> [ByTypeStorage.Mutation]
+func >> <T: SomeStorableByKey>(value: T?, storage: StorageDispatcher) -> [ByTypeStorage.Mutation]
 {
     storage.store(value)
 }
@@ -101,16 +101,16 @@ func >> <T: SomeStorable>(value: T?, storage: StorageDispatcher) -> [ByTypeStora
 /// Remove value of type `T` from `storage`.
 @discardableResult
 public
-func /< <T: SomeStorable>(storage: inout ByTypeStorage, _: T.Type) -> ByTypeStorage.Mutation
+func /< <K: SomeKey>(storage: inout ByTypeStorage, _: K.Type) -> ByTypeStorage.Mutation
 {
-    storage.removeValue(ofType: T.self)
+    storage.removeValue(forKey: K.self)
 }
 
 /// Remove value of type `T` from `storage`.
 @MainActor
 @discardableResult
 public
-func /< <T: SomeStorable>(storage: StorageDispatcher, _: T.Type) -> [ByTypeStorage.Mutation]
+func /< <K: SomeKey>(storage: StorageDispatcher, _: K.Type) -> [ByTypeStorage.Mutation]
 {
-    storage.removeValue(ofType: T.self)
+    storage.removeValue(forKey: K.self)
 }

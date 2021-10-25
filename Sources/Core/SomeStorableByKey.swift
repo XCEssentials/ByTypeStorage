@@ -24,15 +24,21 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension SomeStorable
+protocol SomeStorableByKey: SomeStorable
 {
-    @MainActor
+    associatedtype Key: SomeKey
+}
+
+// MARK: - Internal helpers
+
+//internal
+extension SomeStorableByKey
+{
+    /// `ByTypeStorage` will use this as actual key.
     static
-    func isPresent(in storage: StorageDispatcher) -> Bool
+    var key: String
     {
-        storage.hasValue(ofType: self)
+        Key.name
     }
 }
