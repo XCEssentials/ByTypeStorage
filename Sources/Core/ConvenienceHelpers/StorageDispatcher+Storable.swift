@@ -48,9 +48,13 @@ public
 extension StorageDispatcher
 {
     @discardableResult
-    func store<T: Storable>(_ value: T?) -> [ByTypeStorage.Mutation]
-    {
-        mutate { $0.store(value) }
+    func store<T: Storable>(
+        scope: String = #file,
+        context: String = #function,
+        _ value: T?
+    ) -> [ByTypeStorage.Mutation] {
+        
+        mutate(scope: scope, context: context) { $0.store(value) }
     }
 }
 
@@ -60,8 +64,12 @@ public
 extension StorageDispatcher
 {
     @discardableResult
-    func removeValue<T: Storable>(ofType _: T.Type) -> [ByTypeStorage.Mutation]
-    {
-        mutate { $0.store(T?.none) }
+    func removeValue<T: Storable>(
+        scope: String = #file,
+        context: String = #function,
+        ofType _: T.Type
+    ) -> [ByTypeStorage.Mutation] {
+        
+        mutate(scope: scope, context: context) { $0.store(T?.none) }
     }
 }
