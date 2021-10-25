@@ -11,8 +11,7 @@ print("--- BEGIN of '\(Executable.name)' script ---")
 
 // MARK: Parameters
 
-Spec.BuildSettings.swiftVersion.value = "5.0"
-let swiftLangVersions = "[.v5]"
+Spec.BuildSettings.swiftVersion.value = "5.5"
 
 let localRepo = try Spec.LocalRepo.current()
 
@@ -175,8 +174,7 @@ try CustomTextFile("""
                 ],
                 path: "\(sourcesLocations.tests)"
             ),
-        ],
-        swiftLanguageVersions: \(swiftLangVersions)
+        ]
     )
     """
     )

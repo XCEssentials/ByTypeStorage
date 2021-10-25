@@ -24,55 +24,53 @@
  
  */
 
+// MARK: - GET data
+
 public
-extension ByTypeStorage
+extension Storable
 {
-    final
-    class Container
+    static
+    func from(_ storage: ByTypeStorage) -> Self?
     {
-        public
-        init(with storage: ByTypeStorage = ByTypeStorage())
-        {
-            self.storage = (storage, nil)
-        }
-        
-        //---
-        
-        public
-        typealias Content =
-            (itself: ByTypeStorage, recentChange: ByTypeStorage.MutationDiff?)
-        
-        public internal(set)
-        var storage: Content
-        {
-            didSet
-            {
-                storage.recentChange
-                    .map{ notifyObservers(with: storage.itself, diff: $0) }
-            }
-        }
-        
-        //---
-        
-        /**
-         Id helps to avoid dublicates. Only one subscription is allowed per observer.
-         */
-        var subscriptions: [Subscription.Identifier: Subscription] = [:]
+        storage[self]
+    }
+
+    //---
+
+    static
+    func isPresent(in storage: ByTypeStorage) -> Bool
+    {
+        storage.hasValue(self)
     }
 }
 
-//---
+// MARK: - SET data
 
 public
-protocol StorageInitializable: class
+extension Storable
 {
-    init(with storage: ByTypeStorage.Container)
+    @discardableResult
+    func store(in storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
+    {
+        storage.store(self)
+    }
 }
 
-//---
+// MARK: - REMOVE data
 
 public
-protocol StorageBindable: class
+extension Storable
 {
-    func bind(with storage: ByTypeStorage.Container) -> Self
+    @discardableResult
+    func remove(from storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
+    {
+        storage.removeValue(ofType: Self.self)
+    }
+    
+    @discardableResult
+    static
+    func remove(from storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
+    {
+        storage.removeValue(ofType: self)
+    }
 }
