@@ -24,36 +24,66 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension StorageDispatcher
+struct ActionRequest: SomeActionRequest
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
+    public
+    typealias NonThrowingBody = (inout ByTypeStorage) -> [ByTypeStorage.Mutation]
+    
+    //---
+    
+    public
+    let scope: String
+    
+    public
+    let context: String
+    
+    let nonThrowingBody: NonThrowingBody
+    
+    public
+    var body: StorageDispatcher.ActionHandler
     {
-        storage[V.self]
+        { nonThrowingBody(&$0) }
     }
     
     //---
     
-    func hasValue<V: SomeStorableByKey>(ofType _: V.Type) -> Bool
-    {
-        storage[V.self] != nil
-    }
-}
-
-// MARK: - SET data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func store<V: SomeStorableByKey>(
+    public
+    init(
         scope: String = #file,
         context: String = #function,
-        _ value: V?
-    ) -> [ByTypeStorage.Mutation] {
+        /*@MutationsBuilder*/
+        manyMutations: @escaping NonThrowingBody
+    ) {
         
-        process(scope: scope, context: context) { $0.store(value) }
+        self.scope = scope
+        self.context = context
+        self.nonThrowingBody = manyMutations
+    }
+    
+    public
+    init(
+        scope: String = #file,
+        context: String = #function,
+        /*@MutationsBuilder*/
+        singleMutation: @escaping (inout ByTypeStorage) -> ByTypeStorage.Mutation
+    ) {
+        
+        self.scope = scope
+        self.context = context
+        self.nonThrowingBody = { [singleMutation(&$0)] }
+    }
+    
+    public
+    init(
+        scope: String = #file,
+        context: String = #function,
+        /*@MutationsBuilder*/
+        readOnlyAccess: @escaping (ByTypeStorage) -> Void
+    ) {
+        
+        self.scope = scope
+        self.context = context
+        self.nonThrowingBody = { readOnlyAccess($0); return [] }
     }
 }

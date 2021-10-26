@@ -96,6 +96,33 @@ func >> <T: SomeStorableByKey>(value: T?, storage: StorageDispatcher) -> [ByType
     storage.store(value)
 }
 
+/// Process action request in `storage`.
+@MainActor
+@discardableResult
+public
+func << (storage: StorageDispatcher, request: ActionRequest) -> [ByTypeStorage.Mutation]
+{
+    storage.process(request: request)
+}
+
+/// Process action request in `storage`.
+@MainActor
+@discardableResult
+public
+func << (storage: StorageDispatcher, request: ActionRequestThrowing) throws -> [ByTypeStorage.Mutation]
+{
+    try storage.process(request: request)
+}
+
+/// Process multiple action requests in `storage`.
+@MainActor
+@discardableResult
+public
+func << (storage: StorageDispatcher, requests: [SomeActionRequest]) throws -> [ByTypeStorage.Mutation]
+{
+    try storage.process(requests: requests)
+}
+
 // MARK: - REMOVE operators
 
 /// Remove value of type `T` from `storage`.

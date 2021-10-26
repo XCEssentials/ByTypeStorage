@@ -38,11 +38,11 @@ class StorageDispatcher
     var storage: ByTypeStorage
     
     private
-    let _mutations = PassthroughSubject<MutationNotice, Never>()
+    let _outcomes = PassthroughSubject<ActionOutcome, Never>()
     
     public
     lazy
-    var mutations: AnyPublisher<MutationNotice, Never> = _mutations.eraseToAnyPublisher()
+    var outcomes: AnyPublisher<ActionOutcome, Never> = _outcomes.eraseToAnyPublisher()
     
     //---
     
@@ -60,7 +60,9 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    enum MutationNotice
+    typealias ActionHandler = (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+    
+    enum ActionOutcome
     {
         /// Mutation has been succesfully processed and already applied to the `storage`.
         ///
@@ -100,20 +102,49 @@ public
 extension StorageDispatcher
 {
     @discardableResult
-    func mutate(
-        scope: String = #file,
-        context: String = #function,
-        via handler: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
-    ) rethrows -> [ByTypeStorage.Mutation] {
+    func process(
+        request: ActionRequest
+    ) -> [ByTypeStorage.Mutation] {
 
-        try mutate(scope: scope, context: context) { try [handler(&$0)] }
+        process(scope: request.scope, context: request.context, action: request.nonThrowingBody)
     }
     
     @discardableResult
-    func mutate(
+    func process(
+        request: ActionRequestThrowing
+    ) throws -> [ByTypeStorage.Mutation] {
+
+        try process(scope: request.scope, context: request.context, action: request.body)
+    }
+    
+    @discardableResult
+    func process(
+        requests: [SomeActionRequest]
+    ) throws -> [ByTypeStorage.Mutation] {
+
+        // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
+        try requests
+            .flatMap {
+                
+                try process(scope: $0.scope, context: $0.context, action: $0.body)
+            }
+    }
+    
+    @discardableResult
+    func process(
         scope: String = #file,
         context: String = #function,
-        via handler: (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+        action: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
+    ) rethrows -> [ByTypeStorage.Mutation] {
+
+        try process(scope: scope, context: context) { try [action(&$0)] }
+    }
+    
+    @discardableResult
+    func process(
+        scope: String = #file,
+        context: String = #function,
+        action: ActionHandler
     ) rethrows -> [ByTypeStorage.Mutation] {
         
         // we want to avoid partial changes to be applied in case the handler throws
@@ -125,11 +156,11 @@ extension StorageDispatcher
         
         do
         {
-            mutationsToReport = try handler(&tmpCopyStorage)
+            mutationsToReport = try action(&tmpCopyStorage)
         }
         catch
         {
-            _mutations.send(
+            _outcomes.send(
                 .rejected(
                     reason: error,
                     env: .init(
@@ -151,7 +182,7 @@ extension StorageDispatcher
         
         //---
         
-        _mutations.send(
+        _outcomes.send(
             .processed(
                 storage: storage,
                 mutations: mutationsToReport,

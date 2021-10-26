@@ -24,34 +24,61 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension StorageDispatcher
+struct ActionRequestThrowing: SomeActionRequest
 {
-    subscript<K: SomeKey>(_: K.Type) -> SomeStorable?
-    {
-        storage[K.self]
-    }
+    public
+    typealias Body = StorageDispatcher.ActionHandler
     
-    func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
-    {
-        storage[K.self] != nil
-    }
-}
-
-// MARK: - REMOVE data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func removeValue<K: SomeKey>(
+    //---
+    
+    public
+    let scope: String
+    
+    public
+    let context: String
+    
+    public
+    let body: Body // @sendable ???
+    
+    //---
+    
+    public
+    init(
         scope: String = #file,
         context: String = #function,
-        forKey _: K.Type
-    ) -> [ByTypeStorage.Mutation] {
+        /*@MutationsBuilder*/
+        manyMutations: @escaping Body
+    ) {
         
-        process(scope: scope, context: context) { $0.removeValue(forKey: K.self) }
+        self.scope = scope
+        self.context = context
+        self.body = manyMutations
+    }
+    
+    public
+    init(
+        scope: String = #file,
+        context: String = #function,
+        /*@MutationsBuilder*/
+        singleMutation: @escaping (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
+    ) {
+        
+        self.scope = scope
+        self.context = context
+        self.body = { try [singleMutation(&$0)] }
+    }
+    
+    public
+    init(
+        scope: String = #file,
+        context: String = #function,
+        /*@MutationsBuilder*/
+        readOnlyAccess: @escaping (ByTypeStorage) throws -> Void
+    ) {
+        
+        self.scope = scope
+        self.context = context
+        self.body = { try readOnlyAccess($0); return [] }
     }
 }
