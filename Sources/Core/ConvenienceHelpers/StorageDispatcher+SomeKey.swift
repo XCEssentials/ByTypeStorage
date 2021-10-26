@@ -34,6 +34,11 @@ extension StorageDispatcher
         storage[K.self]
     }
     
+    func fetch<K: SomeKey>(valueForKey keyType: K.Type) throws -> SomeStorable
+    {
+        try storage.fetch(valueForKey: K.self)
+    }
+    
     func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
     {
         storage[K.self] != nil

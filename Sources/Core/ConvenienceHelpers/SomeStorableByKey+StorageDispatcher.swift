@@ -31,9 +31,9 @@ extension SomeStorableByKey
 {
     @MainActor
     static
-    func fetch(from storage: StorageDispatcher) -> Self?
+    func fetch(from storage: StorageDispatcher) throws -> Self
     {
-        storage[self]
+        try storage.fetch(valueOfType: self)
     }
 
     //---

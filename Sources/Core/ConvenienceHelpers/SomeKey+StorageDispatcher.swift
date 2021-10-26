@@ -29,6 +29,19 @@
 public
 extension SomeKey
 {
+    static
+    func fetch(from storage: ByTypeStorage) throws -> SomeStorable
+    {
+        try storage.fetch(valueForKey: self)
+    }
+
+    @MainActor
+    static
+    func fetch(from storage: StorageDispatcher) throws -> SomeStorable
+    {
+        try storage.fetch(valueForKey: self)
+    }
+
     @MainActor
     @discardableResult
     static

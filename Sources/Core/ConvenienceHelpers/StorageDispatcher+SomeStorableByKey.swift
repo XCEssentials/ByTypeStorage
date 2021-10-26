@@ -34,6 +34,11 @@ extension StorageDispatcher
         storage[V.self]
     }
     
+    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
+    {
+        try storage.fetch(valueOfType: V.self)
+    }
+    
     //---
     
     func hasValue<V: SomeStorableByKey>(ofType _: V.Type) -> Bool

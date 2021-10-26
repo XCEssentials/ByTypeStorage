@@ -30,9 +30,9 @@ public
 extension SomeStorableByKey
 {
     static
-    func fetch(from storage: ByTypeStorage) -> Self?
+    func fetch(from storage: ByTypeStorage) throws -> Self
     {
-        storage[self]
+        try storage.fetch(valueOfType: self)
     }
 
     //---

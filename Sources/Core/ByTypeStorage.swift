@@ -41,6 +41,19 @@ struct ByTypeStorage
 public
 extension ByTypeStorage
 {
+    enum ReadDataError: Error
+    {
+        case keyNotFound(
+            SomeKey.Type
+        )
+        
+        case valueTypeMismatch(
+            key: SomeKey.Type,
+            expected: SomeStorable.Type,
+            actual: SomeStorable
+        )
+    }
+    
     enum Mutation
     {
         case addition(key: SomeKey.Type, newValue: SomeStorable)
@@ -59,12 +72,51 @@ extension ByTypeStorage
 {
     subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
     {
-        data[V.key] as? V
+        try? fetch(valueOfType: V.self)
+    }
+    
+    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
+    {
+        guard
+            let someResult = data[V.key]
+        else
+        {
+            throw ReadDataError.keyNotFound(V.Key.self)
+        }
+        
+        //---
+        
+        if
+            let result = someResult as? V
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.valueTypeMismatch(
+                key: V.Key.self,
+                expected: V.self,
+                actual: someResult
+            )
+        }
     }
     
     subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
     {
-        data[K.name]
+        try? fetch(valueForKey: K.self)
+    }
+    
+    func fetch<K: SomeKey>(valueForKey _: K.Type) throws -> SomeStorable
+    {
+        if
+            let result = data[K.name]
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.keyNotFound(K.self)
+        }
     }
     
     //---

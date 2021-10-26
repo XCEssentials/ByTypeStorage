@@ -30,34 +30,34 @@ infix operator /<
 
 /// Fetch value of type `T` from `storage`, if present.
 public
-func << <T: SomeStorableByKey>(_: T.Type, storage: ByTypeStorage) -> T?
+func << <T: SomeStorableByKey>(_: T.Type, storage: ByTypeStorage) throws -> T
 {
-    storage[T.self]
+    try storage.fetch(valueOfType: T.self)
 }
 
 /// Fetch value of type `T` from `storage`, if present.
 @MainActor
 public
-func << <T: SomeStorableByKey>(_: T.Type, storage: StorageDispatcher) -> T?
+func << <T: SomeStorableByKey>(_: T.Type, storage: StorageDispatcher) throws -> T
 {
-    storage[T.self]
+    try storage.fetch(valueOfType: T.self)
 }
 
 //---
 
 /// Fetch value of type `T` from `storage`, if present.
 public
-func >> <T: SomeStorableByKey>(storage: ByTypeStorage, _: T.Type) -> T?
+func >> <T: SomeStorableByKey>(storage: ByTypeStorage, _: T.Type) throws -> T
 {
-    storage[T.self]
+    try storage.fetch(valueOfType: T.self)
 }
 
 /// Fetch value of type `T` from `storage`, if present.
 @MainActor
 public
-func >> <T: SomeStorableByKey>(storage: StorageDispatcher, _: T.Type) -> T?
+func >> <T: SomeStorableByKey>(storage: StorageDispatcher, _: T.Type) throws -> T
 {
-    storage[T.self]
+    try storage.fetch(valueOfType: T.self)
 }
 
 // MARK: - SET operators
