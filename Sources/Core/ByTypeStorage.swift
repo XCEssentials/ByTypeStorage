@@ -32,9 +32,7 @@ public
 struct ByTypeStorage
 {
     //internal
-    typealias History = [(timestamp: Date, outcome: MutationAttemptOutcome)]
-    
-    //internal
+    private
     var data: [String: SomeStorable] = [:]
     
     //internal
@@ -64,6 +62,8 @@ extension ByTypeStorage
         )
     }
     
+    typealias History = [(timestamp: Date, outcome: MutationAttemptOutcome)]
+    
     enum MutationAttemptOutcome
     {
         case addition(key: SomeKey.Type, newValue: SomeStorable)
@@ -75,7 +75,47 @@ extension ByTypeStorage
     }
 }
 
-// MARK: - GET data
+// MARK: - GET data - SomeKey
+
+public
+extension ByTypeStorage
+{
+    subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
+    {
+        try? fetch(valueForKey: K.self)
+    }
+    
+    func fetch<K: SomeKey>(valueForKey _: K.Type) throws -> SomeStorable
+    {
+        if
+            let result = data[K.name]
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.keyNotFound(K.self)
+        }
+    }
+    
+    func hasValue<K: SomeKey>(withKey keyType: K.Type) -> Bool
+    {
+        self[K.self] != nil
+    }
+}
+
+// MARK: - GET data - SomeStorable
+
+public
+extension ByTypeStorage
+{
+    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
+    {
+        data.values.first { $0 is V } != nil
+    }
+}
+
+// MARK: - GET data - SomeStorableByKey
 
 public
 extension ByTypeStorage
@@ -111,34 +151,9 @@ extension ByTypeStorage
         }
     }
     
-    subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
-    {
-        try? fetch(valueForKey: K.self)
-    }
-    
-    func fetch<K: SomeKey>(valueForKey _: K.Type) throws -> SomeStorable
-    {
-        if
-            let result = data[K.name]
-        {
-            return result
-        }
-        else
-        {
-            throw ReadDataError.keyNotFound(K.self)
-        }
-    }
-    
-    //---
-    
     func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
     {
         self[V.self] != nil
-    }
-    
-    func hasValue<K: SomeKey>(withKey keyType: K.Type) -> Bool
-    {
-        self[K.self] != nil
     }
 }
 

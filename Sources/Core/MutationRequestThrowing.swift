@@ -25,11 +25,33 @@
  */
 
 public
-protocol SomeActionRequest
+struct MutationRequestThrowing: SomeMutationRequest
 {
-    var scope: String { get }
+    public
+    typealias Body = StorageDispatcher.MutationHandler
     
-    var context: String { get }
+    //---
     
-    var body: (inout ByTypeStorage) throws -> [ByTypeStorage.MutationAttemptOutcome] { get }
+    public
+    let scope: String
+    
+    public
+    let context: String
+    
+    public
+    let body: Body
+    
+    //---
+    
+    public
+    init(
+        scope: String = #file,
+        context: String = #function,
+        handler: @escaping Body
+    ) {
+
+        self.scope = scope
+        self.context = context
+        self.body = handler
+    }
 }

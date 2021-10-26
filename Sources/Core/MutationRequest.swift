@@ -25,10 +25,10 @@
  */
 
 public
-struct ActionRequest: SomeActionRequest
+struct MutationRequest: SomeMutationRequest
 {
     public
-    typealias NonThrowingBody = (inout ByTypeStorage) -> [ByTypeStorage.MutationAttemptOutcome]
+    typealias NonThrowingBody = (inout ByTypeStorage) -> Void
     
     //---
     
@@ -41,7 +41,7 @@ struct ActionRequest: SomeActionRequest
     let nonThrowingBody: NonThrowingBody
     
     public
-    var body: StorageDispatcher.ActionHandler
+    var body: MutationRequestThrowing.Body
     {
         { nonThrowingBody(&$0) }
     }
@@ -49,50 +49,14 @@ struct ActionRequest: SomeActionRequest
     //---
     
     public
-    static
-    func multipleMutations(
+    init(
         scope: String = #file,
         context: String = #function,
-        /*@MutationsBuilder*/
         handler: @escaping NonThrowingBody
-    ) -> Self {
+    ) {
 
-        .init(
-            scope: scope,
-            context: context,
-            nonThrowingBody: handler
-        )
-    }
-
-    public
-    static
-    func singleMutation(
-        scope: String = #file,
-        context: String = #function,
-        /*@MutationsBuilder*/
-        handler: @escaping (inout ByTypeStorage) -> ByTypeStorage.MutationAttemptOutcome
-    ) -> Self {
-
-        .init(
-            scope: scope,
-            context: context,
-            nonThrowingBody: { [handler(&$0)] }
-        )
-    }
-    
-    public
-    static
-    func readOnlyAccess(
-        scope: String = #file,
-        context: String = #function,
-        /*@MutationsBuilder*/
-        handler: @escaping (ByTypeStorage) -> Void
-    ) -> Self {
-        
-        .init(
-            scope: scope,
-            context: context,
-            nonThrowingBody: { handler($0); return [] }
-        )
+        self.scope = scope
+        self.context = context
+        self.nonThrowingBody = handler
     }
 }

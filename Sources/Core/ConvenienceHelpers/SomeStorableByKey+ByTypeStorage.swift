@@ -43,17 +43,3 @@ extension SomeStorableByKey
         storage.hasValue(ofType: self)
     }
 }
-
-// MARK: - SET data
-
-public
-extension SomeStorableByKey
-{
-    @discardableResult
-    func store(
-        in storage: inout ByTypeStorage
-    ) -> ByTypeStorage.MutationAttemptOutcome {
-        
-        storage.store(self)
-    }
-}

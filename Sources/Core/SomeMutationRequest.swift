@@ -24,41 +24,12 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension StorageDispatcher
+protocol SomeMutationRequest
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
-    {
-        storage[V.self]
-    }
+    var scope: String { get }
     
-    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
-    {
-        try storage.fetch(valueOfType: V.self)
-    }
+    var context: String { get }
     
-    //---
-    
-    func hasValue<V: SomeStorableByKey>(ofType _: V.Type) -> Bool
-    {
-        storage[V.self] != nil
-    }
-}
-
-// MARK: - SET data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func store<V: SomeStorableByKey>(
-        scope: String = #file,
-        context: String = #function,
-        _ value: V?
-    ) -> [ByTypeStorage.MutationAttemptOutcome] {
-        
-        process(scope: scope, context: context) { $0.store(value) }
-    }
+    var body: StorageDispatcher.MutationHandler { get }
 }

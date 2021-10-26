@@ -41,16 +41,4 @@ extension SomeKey
     {
         try storage.fetch(valueForKey: self)
     }
-
-    @MainActor
-    @discardableResult
-    static
-    func remove(
-        scope: String = #file,
-        context: String = #function,
-        from storage: StorageDispatcher
-    ) -> [ByTypeStorage.MutationAttemptOutcome] {
-        
-        storage.removeValue(scope: scope, context: context, forKey: Self.self)
-    }
 }
