@@ -44,41 +44,50 @@ struct ActionRequestThrowing: SomeActionRequest
     //---
     
     public
-    init(
+    static
+    func multipleMutations(
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        manyMutations: @escaping Body
-    ) {
-        
-        self.scope = scope
-        self.context = context
-        self.body = manyMutations
+        handler: @escaping Body
+    ) -> Self {
+
+        .init(
+            scope: scope,
+            context: context,
+            body: handler
+        )
     }
     
     public
-    init(
+    static
+    func singleMutation(
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        singleMutation: @escaping (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
-    ) {
-        
-        self.scope = scope
-        self.context = context
-        self.body = { try [singleMutation(&$0)] }
+        handler: @escaping (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
+    ) -> Self {
+
+        .init(
+            scope: scope,
+            context: context,
+            body: { try [handler(&$0)] }
+        )
     }
     
     public
-    init(
+    static
+    func readOnlyAccess(
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        readOnlyAccess: @escaping (ByTypeStorage) throws -> Void
-    ) {
+        handler: @escaping (ByTypeStorage) throws -> Void
+    ) -> Self {
         
-        self.scope = scope
-        self.context = context
-        self.body = { try readOnlyAccess($0); return [] }
+        .init(
+            scope: scope,
+            context: context,
+            body: { try handler($0); return [] }
+        )
     }
 }
