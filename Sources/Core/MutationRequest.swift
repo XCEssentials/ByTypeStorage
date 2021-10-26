@@ -24,34 +24,39 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension StorageDispatcher
+struct MutationRequest: SomeMutationRequest
 {
-    subscript<K: SomeKey>(_: K.Type) -> SomeStorable?
+    public
+    typealias NonThrowingBody = (inout ByTypeStorage) -> Void
+    
+    //---
+    
+    public
+    let scope: String
+    
+    public
+    let context: String
+    
+    let nonThrowingBody: NonThrowingBody
+    
+    public
+    var body: MutationRequestThrowing.Body
     {
-        storage[K.self]
+        { nonThrowingBody(&$0) }
     }
     
-    func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
-    {
-        storage[K.self] != nil
-    }
-}
-
-// MARK: - REMOVE data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func removeValue<K: SomeKey>(
+    //---
+    
+    public
+    init(
         scope: String = #file,
         context: String = #function,
-        forKey _: K.Type
-    ) -> [ByTypeStorage.Mutation] {
-        
-        process(scope: scope, context: context) { $0.removeValue(forKey: K.self) }
+        handler: @escaping NonThrowingBody
+    ) {
+
+        self.scope = scope
+        self.context = context
+        self.nonThrowingBody = handler
     }
 }

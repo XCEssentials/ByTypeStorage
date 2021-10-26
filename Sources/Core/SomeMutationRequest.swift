@@ -24,13 +24,12 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension StorageDispatcher
+protocol SomeMutationRequest
 {
-    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
-    {
-        storage.data.values.first { $0 is V } != nil
-    }
+    var scope: String { get }
+    
+    var context: String { get }
+    
+    var body: StorageDispatcher.MutationHandler { get }
 }

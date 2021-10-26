@@ -34,7 +34,7 @@ public
 final
 class StorageDispatcher
 {
-    public private(set)
+    private
     var storage: ByTypeStorage
     
     private
@@ -60,7 +60,7 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    typealias ActionHandler = (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+    typealias MutationHandler = (inout ByTypeStorage) throws -> Void
     
     enum ActionOutcome
     {
@@ -69,7 +69,7 @@ extension StorageDispatcher
         /// Includes most recent snapshot of the `storage` and list of recent changes.
         case processed(
             storage: ByTypeStorage,
-            mutations: [ByTypeStorage.Mutation],
+            outcomes: ByTypeStorage.History,
             env: EnvironmentInfo
         )
         
@@ -96,67 +96,113 @@ extension StorageDispatcher
     }
 }
 
-// MARK: - Mutations
+// MARK: - GET data - SomeKey
+
+public
+extension StorageDispatcher
+{
+    subscript<K: SomeKey>(_: K.Type) -> SomeStorable?
+    {
+        storage[K.self]
+    }
+    
+    func fetch<K: SomeKey>(valueForKey keyType: K.Type) throws -> SomeStorable
+    {
+        try storage.fetch(valueForKey: K.self)
+    }
+    
+    func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
+    {
+        storage.hasValue(withKey: K.self)
+    }
+}
+
+// MARK: - GET data - SomeStorable
+
+public
+extension StorageDispatcher
+{
+    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
+    {
+        storage.hasValue(ofType: V.self)
+    }
+}
+
+// MARK: - GET data - SomeStorableByKey
+
+public
+extension StorageDispatcher
+{
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
+    {
+        storage[V.self]
+    }
+    
+    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
+    {
+        try storage.fetch(valueOfType: V.self)
+    }
+    
+    //---
+    
+    func hasValue<V: SomeStorableByKey>(ofType _: V.Type) -> Bool
+    {
+        storage.hasValue(ofType: V.self)
+    }
+}
+
+// MARK: - SET data
 
 public
 extension StorageDispatcher
 {
     @discardableResult
     func process(
-        request: ActionRequest
-    ) -> [ByTypeStorage.Mutation] {
+        request: MutationRequest
+    ) -> ByTypeStorage.History {
 
-        process(scope: request.scope, context: request.context, action: request.nonThrowingBody)
+        mutate(scope: request.scope, context: request.context, handler: request.nonThrowingBody)
     }
     
     @discardableResult
     func process(
-        request: ActionRequestThrowing
-    ) throws -> [ByTypeStorage.Mutation] {
+        request: MutationRequestThrowing
+    ) throws -> ByTypeStorage.History {
 
-        try process(scope: request.scope, context: request.context, action: request.body)
+        try mutate(scope: request.scope, context: request.context, handler: request.body)
     }
     
     @discardableResult
     func process(
-        requests: [SomeActionRequest]
-    ) throws -> [ByTypeStorage.Mutation] {
+        requests: [SomeMutationRequest]
+    ) throws -> ByTypeStorage.History {
 
         // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
         try requests
             .flatMap {
                 
-                try process(scope: $0.scope, context: $0.context, action: $0.body)
+                try mutate(scope: $0.scope, context: $0.context, handler: $0.body)
             }
     }
     
     @discardableResult
-    func process(
+    func mutate(
         scope: String = #file,
         context: String = #function,
-        action: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
-    ) rethrows -> [ByTypeStorage.Mutation] {
-
-        try process(scope: scope, context: context) { try [action(&$0)] }
-    }
-    
-    @discardableResult
-    func process(
-        scope: String = #file,
-        context: String = #function,
-        action: ActionHandler
-    ) rethrows -> [ByTypeStorage.Mutation] {
+        handler: MutationHandler
+    ) rethrows -> ByTypeStorage.History {
         
         // we want to avoid partial changes to be applied in case the handler throws
         var tmpCopyStorage = storage
         
         //---
         
-        let mutationsToReport: [ByTypeStorage.Mutation]
+        let outcomesToReport: ByTypeStorage.History
         
         do
         {
-            mutationsToReport = try action(&tmpCopyStorage)
+            try handler(&tmpCopyStorage)
+            outcomesToReport = tmpCopyStorage.resetHistory()
         }
         catch
         {
@@ -178,14 +224,14 @@ extension StorageDispatcher
         //---
         
         // if handler didn't throw - we apply changes to permanent storage
-        storage = tmpCopyStorage
+        storage = tmpCopyStorage // NOTE: the history has already been cleared
         
         //---
         
         _outcomes.send(
             .processed(
                 storage: storage,
-                mutations: mutationsToReport,
+                outcomes: outcomesToReport,
                 env: .init(
                     scope: scope,
                     context: context
@@ -195,6 +241,6 @@ extension StorageDispatcher
         
         //---
         
-        return mutationsToReport
+        return outcomesToReport
     }
 }
