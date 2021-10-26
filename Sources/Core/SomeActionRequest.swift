@@ -24,34 +24,12 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension StorageDispatcher
+protocol SomeActionRequest
 {
-    subscript<K: SomeKey>(_: K.Type) -> SomeStorable?
-    {
-        storage[K.self]
-    }
+    var scope: String { get }
     
-    func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
-    {
-        storage[K.self] != nil
-    }
-}
-
-// MARK: - REMOVE data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func removeValue<K: SomeKey>(
-        scope: String = #file,
-        context: String = #function,
-        forKey _: K.Type
-    ) -> [ByTypeStorage.Mutation] {
-        
-        process(scope: scope, context: context) { $0.removeValue(forKey: K.self) }
-    }
+    var context: String { get }
+    
+    var body: (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation] { get }
 }

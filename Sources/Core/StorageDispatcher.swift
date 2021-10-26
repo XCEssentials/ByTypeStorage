@@ -60,6 +60,8 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
+    typealias ActionHandler = (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+    
     enum ActionOutcome
     {
         /// Mutation has been succesfully processed and already applied to the `storage`.
@@ -101,6 +103,35 @@ extension StorageDispatcher
 {
     @discardableResult
     func process(
+        request: ActionRequest
+    ) -> [ByTypeStorage.Mutation] {
+
+        process(scope: request.scope, context: request.context, action: request.nonThrowingBody)
+    }
+    
+    @discardableResult
+    func process(
+        request: ActionRequestThrowing
+    ) throws -> [ByTypeStorage.Mutation] {
+
+        try process(scope: request.scope, context: request.context, action: request.body)
+    }
+    
+    @discardableResult
+    func process(
+        requests: [SomeActionRequest]
+    ) throws -> [ByTypeStorage.Mutation] {
+
+        // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
+        try requests
+            .flatMap {
+                
+                try process(scope: $0.scope, context: $0.context, action: $0.body)
+            }
+    }
+    
+    @discardableResult
+    func process(
         scope: String = #file,
         context: String = #function,
         action: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
@@ -113,7 +144,7 @@ extension StorageDispatcher
     func process(
         scope: String = #file,
         context: String = #function,
-        action: (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+        action: ActionHandler
     ) rethrows -> [ByTypeStorage.Mutation] {
         
         // we want to avoid partial changes to be applied in case the handler throws
