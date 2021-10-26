@@ -29,15 +29,16 @@
 public
 extension SomeKey
 {
-    @MainActor
-    @discardableResult
     static
-    func remove(
-        scope: String = #file,
-        context: String = #function,
-        from storage: StorageDispatcher
-    ) -> [ByTypeStorage.Mutation] {
-        
-        storage.removeValue(scope: scope, context: context, forKey: Self.self)
+    func fetch(from storage: ByTypeStorage) throws -> SomeStorable
+    {
+        try storage.fetch(valueForKey: self)
+    }
+
+    @MainActor
+    static
+    func fetch(from storage: StorageDispatcher) throws -> SomeStorable
+    {
+        try storage.fetch(valueForKey: self)
     }
 }

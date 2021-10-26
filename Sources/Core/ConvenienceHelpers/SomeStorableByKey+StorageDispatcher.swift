@@ -31,9 +31,9 @@ extension SomeStorableByKey
 {
     @MainActor
     static
-    func fetch(from storage: StorageDispatcher) -> Self?
+    func fetch(from storage: StorageDispatcher) throws -> Self
     {
-        storage[self]
+        try storage.fetch(valueOfType: self)
     }
 
     //---
@@ -43,22 +43,5 @@ extension SomeStorableByKey
     func isPresent(in storage: StorageDispatcher) -> Bool
     {
         storage.hasValue(ofType: self)
-    }
-}
-
-// MARK: - SET data
-
-public
-extension SomeStorableByKey
-{
-    @MainActor
-    @discardableResult
-    func store(
-        scope: String = #file,
-        context: String = #function,
-        in storage: StorageDispatcher
-    ) -> [ByTypeStorage.Mutation] {
-        
-        storage.store(scope: scope, context: context, self)
     }
 }

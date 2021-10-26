@@ -24,16 +24,24 @@
  
  */
 
+import Foundation
+
+//---
+
 public
 struct ByTypeStorage
 {
-    public
-    init() {}
+    //internal
+    private
+    var data: [String: SomeStorable] = [:]
+    
+    //internal
+    var history: History = []
     
     //---
     
-    //internal
-    var data = [String: SomeStorable]()
+    public
+    init() {}
 }
 
 // MARK: - Nested types
@@ -41,7 +49,22 @@ struct ByTypeStorage
 public
 extension ByTypeStorage
 {
-    enum Mutation
+    enum ReadDataError: Error
+    {
+        case keyNotFound(
+            SomeKey.Type
+        )
+        
+        case valueTypeMismatch(
+            key: SomeKey.Type,
+            expected: SomeStorable.Type,
+            actual: SomeStorable
+        )
+    }
+    
+    typealias History = [(timestamp: Date, outcome: MutationAttemptOutcome)]
+    
+    enum MutationAttemptOutcome
     {
         case addition(key: SomeKey.Type, newValue: SomeStorable)
         case update(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
@@ -52,31 +75,85 @@ extension ByTypeStorage
     }
 }
 
-// MARK: - GET data
+// MARK: - GET data - SomeKey
+
+public
+extension ByTypeStorage
+{
+    subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
+    {
+        try? fetch(valueForKey: K.self)
+    }
+    
+    func fetch<K: SomeKey>(valueForKey _: K.Type) throws -> SomeStorable
+    {
+        if
+            let result = data[K.name]
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.keyNotFound(K.self)
+        }
+    }
+    
+    func hasValue<K: SomeKey>(withKey keyType: K.Type) -> Bool
+    {
+        self[K.self] != nil
+    }
+}
+
+// MARK: - GET data - SomeStorable
+
+public
+extension ByTypeStorage
+{
+    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
+    {
+        data.values.first { $0 is V } != nil
+    }
+}
+
+// MARK: - GET data - SomeStorableByKey
 
 public
 extension ByTypeStorage
 {
     subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
     {
-        data[V.key] as? V
+        try? fetch(valueOfType: V.self)
     }
     
-    subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
+    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
     {
-        data[K.name]
+        guard
+            let someResult = data[V.key]
+        else
+        {
+            throw ReadDataError.keyNotFound(V.Key.self)
+        }
+        
+        //---
+        
+        if
+            let result = someResult as? V
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.valueTypeMismatch(
+                key: V.Key.self,
+                expected: V.self,
+                actual: someResult
+            )
+        }
     }
-    
-    //---
     
     func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
     {
         self[V.self] != nil
-    }
-    
-    func hasValue<K: SomeKey>(withKey keyType: K.Type) -> Bool
-    {
-        self[K.self] != nil
     }
 }
 
@@ -87,8 +164,12 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func store<V: SomeStorableByKey>(_ value: V?) -> Mutation
+    func store<V: SomeStorableByKey>(_ value: V?) -> MutationAttemptOutcome
     {
+        let outcome: MutationAttemptOutcome
+        
+        //---
+        
         switch (self[V.Key.self], value)
         {
             case (.none, .some(let newValue)):
@@ -97,7 +178,7 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .addition(key: V.Key.self, newValue: newValue)
+                outcome = .addition(key: V.Key.self, newValue: newValue)
                 
             //---
                 
@@ -107,7 +188,7 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .update(key: V.Key.self, oldValue: oldValue, newValue: newValue)
+                outcome = .update(key: V.Key.self, oldValue: oldValue, newValue: newValue)
                 
             //---
                
@@ -117,12 +198,22 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .removal(key: V.Key.self, oldValue: oldValue)
+                outcome = .removal(key: V.Key.self, oldValue: oldValue)
                 
             case (.none, .none):
                 
-                return .nothingToRemove(key: V.Key.self)
+                outcome = .nothingToRemove(key: V.Key.self)
         }
+        
+        //---
+              
+        history.append(
+            (Date(), outcome)
+        )
+        
+        //---
+        
+        return outcome
     }
 }
 
@@ -133,8 +224,12 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func removeValue<K: SomeKey>(forKey keyType: K.Type) -> Mutation
+    func removeValue<K: SomeKey>(forKey keyType: K.Type) -> MutationAttemptOutcome
     {
+        let outcome: MutationAttemptOutcome
+        
+        //---
+        
         switch self[K.self]
         {
             case .some(let oldValue):
@@ -143,11 +238,39 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .removal(key: K.self, oldValue: oldValue)
+                outcome = .removal(key: K.self, oldValue: oldValue)
                 
             case .none:
                 
-                return .nothingToRemove(key: K.self)
+                outcome = .nothingToRemove(key: K.self)
         }
+        
+        //---
+              
+        history.append(
+            (Date(), outcome)
+        )
+        
+        //---
+        
+        return outcome
+    }
+}
+
+// MARK: - History management
+
+//internal
+extension ByTypeStorage
+{
+    /// Clear the history and return it's copy as result.
+    mutating
+    func resetHistory() -> History
+    {
+        let result = history
+        history.removeAll()
+        
+        //---
+        
+        return result
     }
 }

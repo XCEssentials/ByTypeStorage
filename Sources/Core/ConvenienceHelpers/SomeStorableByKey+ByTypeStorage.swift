@@ -30,9 +30,9 @@ public
 extension SomeStorableByKey
 {
     static
-    func fetch(from storage: ByTypeStorage) -> Self?
+    func fetch(from storage: ByTypeStorage) throws -> Self
     {
-        storage[self]
+        try storage.fetch(valueOfType: self)
     }
 
     //---
@@ -41,19 +41,5 @@ extension SomeStorableByKey
     func isPresent(in storage: ByTypeStorage) -> Bool
     {
         storage.hasValue(ofType: self)
-    }
-}
-
-// MARK: - SET data
-
-public
-extension SomeStorableByKey
-{
-    @discardableResult
-    func store(
-        in storage: inout ByTypeStorage
-    ) -> ByTypeStorage.Mutation {
-        
-        storage.store(self)
     }
 }
