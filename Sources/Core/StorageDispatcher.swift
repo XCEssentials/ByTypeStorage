@@ -60,7 +60,7 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    typealias ActionHandler = (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation]
+    typealias ActionHandler = (inout ByTypeStorage) throws -> [ByTypeStorage.MutationAttemptOutcome]
     
     enum ActionOutcome
     {
@@ -69,7 +69,7 @@ extension StorageDispatcher
         /// Includes most recent snapshot of the `storage` and list of recent changes.
         case processed(
             storage: ByTypeStorage,
-            mutations: [ByTypeStorage.Mutation],
+            mutations: [ByTypeStorage.MutationAttemptOutcome],
             env: EnvironmentInfo
         )
         
@@ -104,7 +104,7 @@ extension StorageDispatcher
     @discardableResult
     func process(
         request: ActionRequest
-    ) -> [ByTypeStorage.Mutation] {
+    ) -> [ByTypeStorage.MutationAttemptOutcome] {
 
         process(scope: request.scope, context: request.context, action: request.nonThrowingBody)
     }
@@ -112,7 +112,7 @@ extension StorageDispatcher
     @discardableResult
     func process(
         request: ActionRequestThrowing
-    ) throws -> [ByTypeStorage.Mutation] {
+    ) throws -> [ByTypeStorage.MutationAttemptOutcome] {
 
         try process(scope: request.scope, context: request.context, action: request.body)
     }
@@ -120,7 +120,7 @@ extension StorageDispatcher
     @discardableResult
     func process(
         requests: [SomeActionRequest]
-    ) throws -> [ByTypeStorage.Mutation] {
+    ) throws -> [ByTypeStorage.MutationAttemptOutcome] {
 
         // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
         try requests
@@ -134,8 +134,8 @@ extension StorageDispatcher
     func process(
         scope: String = #file,
         context: String = #function,
-        action: (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
-    ) rethrows -> [ByTypeStorage.Mutation] {
+        action: (inout ByTypeStorage) throws -> ByTypeStorage.MutationAttemptOutcome
+    ) rethrows -> [ByTypeStorage.MutationAttemptOutcome] {
 
         try process(scope: scope, context: context) { try [action(&$0)] }
     }
@@ -145,14 +145,14 @@ extension StorageDispatcher
         scope: String = #file,
         context: String = #function,
         action: ActionHandler
-    ) rethrows -> [ByTypeStorage.Mutation] {
+    ) rethrows -> [ByTypeStorage.MutationAttemptOutcome] {
         
         // we want to avoid partial changes to be applied in case the handler throws
         var tmpCopyStorage = storage
         
         //---
         
-        let mutationsToReport: [ByTypeStorage.Mutation]
+        let mutationsToReport: [ByTypeStorage.MutationAttemptOutcome]
         
         do
         {

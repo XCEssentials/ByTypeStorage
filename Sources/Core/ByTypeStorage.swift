@@ -24,16 +24,26 @@
  
  */
 
+import Foundation
+
+//---
+
 public
 struct ByTypeStorage
 {
-    public
-    init() {}
+    //internal
+    typealias History = [(timestamp: Date, outcome: MutationAttemptOutcome)]
+    
+    //internal
+    var data: [String: SomeStorable] = [:]
+    
+    //internal
+    var history: History = []
     
     //---
     
-    //internal
-    var data = [String: SomeStorable]()
+    public
+    init() {}
 }
 
 // MARK: - Nested types
@@ -54,7 +64,7 @@ extension ByTypeStorage
         )
     }
     
-    enum Mutation
+    enum MutationAttemptOutcome
     {
         case addition(key: SomeKey.Type, newValue: SomeStorable)
         case update(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
@@ -139,8 +149,12 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func store<V: SomeStorableByKey>(_ value: V?) -> Mutation
+    func store<V: SomeStorableByKey>(_ value: V?) -> MutationAttemptOutcome
     {
+        let outcome: MutationAttemptOutcome
+        
+        //---
+        
         switch (self[V.Key.self], value)
         {
             case (.none, .some(let newValue)):
@@ -149,7 +163,7 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .addition(key: V.Key.self, newValue: newValue)
+                outcome = .addition(key: V.Key.self, newValue: newValue)
                 
             //---
                 
@@ -159,7 +173,7 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .update(key: V.Key.self, oldValue: oldValue, newValue: newValue)
+                outcome = .update(key: V.Key.self, oldValue: oldValue, newValue: newValue)
                 
             //---
                
@@ -169,12 +183,22 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .removal(key: V.Key.self, oldValue: oldValue)
+                outcome = .removal(key: V.Key.self, oldValue: oldValue)
                 
             case (.none, .none):
                 
-                return .nothingToRemove(key: V.Key.self)
+                outcome = .nothingToRemove(key: V.Key.self)
         }
+        
+        //---
+              
+        history.append(
+            (Date(), outcome)
+        )
+        
+        //---
+        
+        return outcome
     }
 }
 
@@ -185,8 +209,12 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func removeValue<K: SomeKey>(forKey keyType: K.Type) -> Mutation
+    func removeValue<K: SomeKey>(forKey keyType: K.Type) -> MutationAttemptOutcome
     {
+        let outcome: MutationAttemptOutcome
+        
+        //---
+        
         switch self[K.self]
         {
             case .some(let oldValue):
@@ -195,11 +223,39 @@ extension ByTypeStorage
                 
                 //---
                 
-                return .removal(key: K.self, oldValue: oldValue)
+                outcome = .removal(key: K.self, oldValue: oldValue)
                 
             case .none:
                 
-                return .nothingToRemove(key: K.self)
+                outcome = .nothingToRemove(key: K.self)
         }
+        
+        //---
+              
+        history.append(
+            (Date(), outcome)
+        )
+        
+        //---
+        
+        return outcome
+    }
+}
+
+// MARK: - History management
+
+//internal
+extension ByTypeStorage
+{
+    /// Clear the history and return it's copy as result.
+    mutating
+    func resetHistory() -> History
+    {
+        let result = history
+        history.removeAll()
+        
+        //---
+        
+        return result
     }
 }

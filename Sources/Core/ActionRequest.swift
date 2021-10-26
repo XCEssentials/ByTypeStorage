@@ -28,7 +28,7 @@ public
 struct ActionRequest: SomeActionRequest
 {
     public
-    typealias NonThrowingBody = (inout ByTypeStorage) -> [ByTypeStorage.Mutation]
+    typealias NonThrowingBody = (inout ByTypeStorage) -> [ByTypeStorage.MutationAttemptOutcome]
     
     //---
     
@@ -70,7 +70,7 @@ struct ActionRequest: SomeActionRequest
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        handler: @escaping (inout ByTypeStorage) -> ByTypeStorage.Mutation
+        handler: @escaping (inout ByTypeStorage) -> ByTypeStorage.MutationAttemptOutcome
     ) -> Self {
 
         .init(

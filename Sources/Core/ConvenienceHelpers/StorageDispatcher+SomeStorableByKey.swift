@@ -57,7 +57,7 @@ extension StorageDispatcher
         scope: String = #file,
         context: String = #function,
         _ value: V?
-    ) -> [ByTypeStorage.Mutation] {
+    ) -> [ByTypeStorage.MutationAttemptOutcome] {
         
         process(scope: scope, context: context) { $0.store(value) }
     }

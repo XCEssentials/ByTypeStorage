@@ -31,5 +31,5 @@ protocol SomeActionRequest
     
     var context: String { get }
     
-    var body: (inout ByTypeStorage) throws -> [ByTypeStorage.Mutation] { get }
+    var body: (inout ByTypeStorage) throws -> [ByTypeStorage.MutationAttemptOutcome] { get }
 }

@@ -57,7 +57,7 @@ extension SomeStorableByKey
         scope: String = #file,
         context: String = #function,
         in storage: StorageDispatcher
-    ) -> [ByTypeStorage.Mutation] {
+    ) -> [ByTypeStorage.MutationAttemptOutcome] {
         
         storage.store(scope: scope, context: context, self)
     }

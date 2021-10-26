@@ -65,7 +65,7 @@ func >> <T: SomeStorableByKey>(storage: StorageDispatcher, _: T.Type) throws -> 
 /// Store `value` in `storage`.
 @discardableResult
 public
-func << <T: SomeStorableByKey>(storage: inout ByTypeStorage, value: T?) -> ByTypeStorage.Mutation
+func << <T: SomeStorableByKey>(storage: inout ByTypeStorage, value: T?) -> ByTypeStorage.MutationAttemptOutcome
 {
     storage.store(value)
 }
@@ -74,7 +74,7 @@ func << <T: SomeStorableByKey>(storage: inout ByTypeStorage, value: T?) -> ByTyp
 @MainActor
 @discardableResult
 public
-func << <T: SomeStorableByKey>(storage: StorageDispatcher, value: T?) -> [ByTypeStorage.Mutation]
+func << <T: SomeStorableByKey>(storage: StorageDispatcher, value: T?) -> [ByTypeStorage.MutationAttemptOutcome]
 {
     storage.store(value)
 }
@@ -82,7 +82,7 @@ func << <T: SomeStorableByKey>(storage: StorageDispatcher, value: T?) -> [ByType
 /// Store `value` in `storage`.
 @discardableResult
 public
-func >> <T: SomeStorableByKey>(value: T?, storage: inout ByTypeStorage) -> ByTypeStorage.Mutation
+func >> <T: SomeStorableByKey>(value: T?, storage: inout ByTypeStorage) -> ByTypeStorage.MutationAttemptOutcome
 {
     storage.store(value)
 }
@@ -91,7 +91,7 @@ func >> <T: SomeStorableByKey>(value: T?, storage: inout ByTypeStorage) -> ByTyp
 @MainActor
 @discardableResult
 public
-func >> <T: SomeStorableByKey>(value: T?, storage: StorageDispatcher) -> [ByTypeStorage.Mutation]
+func >> <T: SomeStorableByKey>(value: T?, storage: StorageDispatcher) -> [ByTypeStorage.MutationAttemptOutcome]
 {
     storage.store(value)
 }
@@ -100,7 +100,7 @@ func >> <T: SomeStorableByKey>(value: T?, storage: StorageDispatcher) -> [ByType
 @MainActor
 @discardableResult
 public
-func << (storage: StorageDispatcher, request: ActionRequest) -> [ByTypeStorage.Mutation]
+func << (storage: StorageDispatcher, request: ActionRequest) -> [ByTypeStorage.MutationAttemptOutcome]
 {
     storage.process(request: request)
 }
@@ -109,7 +109,7 @@ func << (storage: StorageDispatcher, request: ActionRequest) -> [ByTypeStorage.M
 @MainActor
 @discardableResult
 public
-func << (storage: StorageDispatcher, request: ActionRequestThrowing) throws -> [ByTypeStorage.Mutation]
+func << (storage: StorageDispatcher, request: ActionRequestThrowing) throws -> [ByTypeStorage.MutationAttemptOutcome]
 {
     try storage.process(request: request)
 }
@@ -118,7 +118,7 @@ func << (storage: StorageDispatcher, request: ActionRequestThrowing) throws -> [
 @MainActor
 @discardableResult
 public
-func << (storage: StorageDispatcher, requests: [SomeActionRequest]) throws -> [ByTypeStorage.Mutation]
+func << (storage: StorageDispatcher, requests: [SomeActionRequest]) throws -> [ByTypeStorage.MutationAttemptOutcome]
 {
     try storage.process(requests: requests)
 }
@@ -128,7 +128,7 @@ func << (storage: StorageDispatcher, requests: [SomeActionRequest]) throws -> [B
 /// Remove value of type `T` from `storage`.
 @discardableResult
 public
-func /< <K: SomeKey>(storage: inout ByTypeStorage, _: K.Type) -> ByTypeStorage.Mutation
+func /< <K: SomeKey>(storage: inout ByTypeStorage, _: K.Type) -> ByTypeStorage.MutationAttemptOutcome
 {
     storage.removeValue(forKey: K.self)
 }
@@ -137,7 +137,7 @@ func /< <K: SomeKey>(storage: inout ByTypeStorage, _: K.Type) -> ByTypeStorage.M
 @MainActor
 @discardableResult
 public
-func /< <K: SomeKey>(storage: StorageDispatcher, _: K.Type) -> [ByTypeStorage.Mutation]
+func /< <K: SomeKey>(storage: StorageDispatcher, _: K.Type) -> [ByTypeStorage.MutationAttemptOutcome]
 {
     storage.removeValue(forKey: K.self)
 }

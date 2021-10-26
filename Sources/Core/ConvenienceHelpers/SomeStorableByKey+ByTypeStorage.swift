@@ -52,7 +52,7 @@ extension SomeStorableByKey
     @discardableResult
     func store(
         in storage: inout ByTypeStorage
-    ) -> ByTypeStorage.Mutation {
+    ) -> ByTypeStorage.MutationAttemptOutcome {
         
         storage.store(self)
     }

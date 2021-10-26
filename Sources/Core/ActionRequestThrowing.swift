@@ -65,7 +65,7 @@ struct ActionRequestThrowing: SomeActionRequest
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        handler: @escaping (inout ByTypeStorage) throws -> ByTypeStorage.Mutation
+        handler: @escaping (inout ByTypeStorage) throws -> ByTypeStorage.MutationAttemptOutcome
     ) -> Self {
 
         .init(

@@ -55,7 +55,7 @@ extension StorageDispatcher
         scope: String = #file,
         context: String = #function,
         forKey _: K.Type
-    ) -> [ByTypeStorage.Mutation] {
+    ) -> [ByTypeStorage.MutationAttemptOutcome] {
         
         process(scope: scope, context: context) { $0.removeValue(forKey: K.self) }
     }

@@ -49,7 +49,7 @@ extension SomeKey
         scope: String = #file,
         context: String = #function,
         from storage: StorageDispatcher
-    ) -> [ByTypeStorage.Mutation] {
+    ) -> [ByTypeStorage.MutationAttemptOutcome] {
         
         storage.removeValue(scope: scope, context: context, forKey: Self.self)
     }
