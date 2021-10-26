@@ -49,41 +49,50 @@ struct ActionRequest: SomeActionRequest
     //---
     
     public
-    init(
+    static
+    func multipleMutations(
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        manyMutations: @escaping NonThrowingBody
-    ) {
-        
-        self.scope = scope
-        self.context = context
-        self.nonThrowingBody = manyMutations
+        handler: @escaping NonThrowingBody
+    ) -> Self {
+
+        .init(
+            scope: scope,
+            context: context,
+            nonThrowingBody: handler
+        )
+    }
+
+    public
+    static
+    func singleMutation(
+        scope: String = #file,
+        context: String = #function,
+        /*@MutationsBuilder*/
+        handler: @escaping (inout ByTypeStorage) -> ByTypeStorage.Mutation
+    ) -> Self {
+
+        .init(
+            scope: scope,
+            context: context,
+            nonThrowingBody: { [handler(&$0)] }
+        )
     }
     
     public
-    init(
+    static
+    func readOnlyAccess(
         scope: String = #file,
         context: String = #function,
         /*@MutationsBuilder*/
-        singleMutation: @escaping (inout ByTypeStorage) -> ByTypeStorage.Mutation
-    ) {
+        handler: @escaping (ByTypeStorage) -> Void
+    ) -> Self {
         
-        self.scope = scope
-        self.context = context
-        self.nonThrowingBody = { [singleMutation(&$0)] }
-    }
-    
-    public
-    init(
-        scope: String = #file,
-        context: String = #function,
-        /*@MutationsBuilder*/
-        readOnlyAccess: @escaping (ByTypeStorage) -> Void
-    ) {
-        
-        self.scope = scope
-        self.context = context
-        self.nonThrowingBody = { readOnlyAccess($0); return [] }
+        .init(
+            scope: scope,
+            context: context,
+            nonThrowingBody: { handler($0); return [] }
+        )
     }
 }
