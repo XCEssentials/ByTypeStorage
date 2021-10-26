@@ -49,7 +49,7 @@ struct ByTypeStorage
 public
 extension ByTypeStorage
 {
-    enum ReadDataError: Error
+    enum GeneralError: Error
     {
         case keyNotFound(
             SomeKey.Type
@@ -66,12 +66,13 @@ extension ByTypeStorage
     
     enum MutationAttemptOutcome
     {
-        case addition(key: SomeKey.Type, newValue: SomeStorable)
-        case update(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
-        case removal(key: SomeKey.Type, oldValue: SomeStorable)
+        case initialization(key: SomeKey.Type, newValue: SomeStorable)
+        case actualization(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
+        case transition(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
+        case deinitialization(key: SomeKey.Type, oldValue: SomeStorable)
         
         /// No removal operation has been performed, because no such key has been found.
-        case nothingToRemove(key: SomeKey.Type)
+        case nothingToRemove(GeneralError)
     }
 }
 
@@ -94,7 +95,7 @@ extension ByTypeStorage
         }
         else
         {
-            throw ReadDataError.keyNotFound(K.self)
+            throw GeneralError.keyNotFound(K.self)
         }
     }
     
@@ -131,7 +132,7 @@ extension ByTypeStorage
             let someResult = data[V.key]
         else
         {
-            throw ReadDataError.keyNotFound(V.Key.self)
+            throw GeneralError.keyNotFound(V.Key.self)
         }
         
         //---
@@ -143,7 +144,7 @@ extension ByTypeStorage
         }
         else
         {
-            throw ReadDataError.valueTypeMismatch(
+            throw GeneralError.valueTypeMismatch(
                 key: V.Key.self,
                 expected: V.self,
                 actual: someResult
@@ -170,7 +171,7 @@ extension ByTypeStorage
         
         //---
         
-        switch (self[V.Key.self], value)
+        switch (data[V.Key.name], value)
         {
             case (.none, .some(let newValue)):
                 
@@ -178,7 +179,7 @@ extension ByTypeStorage
                 
                 //---
                 
-                outcome = .addition(key: V.Key.self, newValue: newValue)
+                outcome = .initialization(key: V.Key.self, newValue: newValue)
                 
             //---
                 
@@ -188,7 +189,15 @@ extension ByTypeStorage
                 
                 //---
                 
-                outcome = .update(key: V.Key.self, oldValue: oldValue, newValue: newValue)
+                if
+                    type(of: oldValue) == type(of: newValue)
+                {
+                    outcome = .actualization(key: V.Key.self, oldValue: oldValue, newValue: newValue)
+                }
+                else
+                {
+                    outcome = .transition(key: V.Key.self, oldValue: oldValue, newValue: newValue)
+                }
                 
             //---
                
@@ -198,11 +207,11 @@ extension ByTypeStorage
                 
                 //---
                 
-                outcome = .removal(key: V.Key.self, oldValue: oldValue)
+                outcome = .deinitialization(key: V.Key.self, oldValue: oldValue)
                 
             case (.none, .none):
                 
-                outcome = .nothingToRemove(key: V.Key.self)
+                outcome = .nothingToRemove(.keyNotFound(V.Key.self))
         }
         
         //---
@@ -230,7 +239,7 @@ extension ByTypeStorage
         
         //---
         
-        switch self[K.self]
+        switch data[K.name]
         {
             case .some(let oldValue):
                 
@@ -238,11 +247,11 @@ extension ByTypeStorage
                 
                 //---
                 
-                outcome = .removal(key: K.self, oldValue: oldValue)
+                outcome = .deinitialization(key: K.self, oldValue: oldValue)
                 
             case .none:
                 
-                outcome = .nothingToRemove(key: K.self)
+                outcome = .nothingToRemove(.keyNotFound(K.self))
         }
         
         //---
