@@ -25,7 +25,7 @@
  */
 
 public
-struct MutationRequest: SomeMutationRequest
+struct AccessRequest: SomeAccessRequest
 {
     public
     typealias NonThrowingBody = (inout ByTypeStorage) -> Void
@@ -44,7 +44,7 @@ struct MutationRequest: SomeMutationRequest
     let nonThrowingBody: NonThrowingBody
     
     public
-    var body: MutationRequestThrowing.Body
+    var body: AccessRequestThrowing.Body
     {
         { nonThrowingBody(&$0) }
     }

@@ -38,11 +38,11 @@ class StorageDispatcher
     var storage: ByTypeStorage
     
     private
-    let _outcomes = PassthroughSubject<ActionOutcome, Never>()
+    let _outcomes = PassthroughSubject<AccessRequestOutcome, Never>()
     
     public
     lazy
-    var outcomes: AnyPublisher<ActionOutcome, Never> = _outcomes.eraseToAnyPublisher()
+    var outcomes: AnyPublisher<AccessRequestOutcome, Never> = _outcomes.eraseToAnyPublisher()
     
     //---
     
@@ -60,16 +60,16 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    typealias MutationHandler = (inout ByTypeStorage) throws -> Void
+    typealias AccessHandler = (inout ByTypeStorage) throws -> Void
     
-    enum ActionOutcome
+    enum AccessRequestOutcome
     {
         /// Mutation has been succesfully processed and already applied to the `storage`.
         ///
         /// Includes most recent snapshot of the `storage` and list of recent changes.
         case processed(
             storage: ByTypeStorage,
-            outcomes: ByTypeStorage.History,
+            mutations: ByTypeStorage.History,
             env: EnvironmentInfo
         )
         
@@ -161,54 +161,54 @@ extension StorageDispatcher
 {
     @discardableResult
     func process(
-        request: MutationRequest
+        _ request: AccessRequest
     ) -> ByTypeStorage.History {
 
-        mutate(
+        access(
             scope: request.scope,
             context: request.context,
             location: request.location,
-            handler: request.nonThrowingBody
+            request.nonThrowingBody
         )
     }
     
     @discardableResult
     func process(
-        request: MutationRequestThrowing
+        _ request: AccessRequestThrowing
     ) throws -> ByTypeStorage.History {
 
-        try mutate(
+        try access(
             scope: request.scope,
             context: request.context,
             location: request.location,
-            handler: request.body
+            request.body
         )
     }
     
     @discardableResult
     func process(
-        requests: [SomeMutationRequest]
+        _ requests: [SomeAccessRequest]
     ) throws -> ByTypeStorage.History {
 
         // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
         try requests
             .flatMap {
                 
-                try mutate(
+                try access(
                     scope: $0.scope,
                     context: $0.context,
                     location: $0.location,
-                    handler: $0.body
+                    $0.body
                 )
             }
     }
     
     @discardableResult
-    func mutate(
+    func access(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
-        handler: MutationHandler
+        _ handler: AccessHandler
     ) rethrows -> ByTypeStorage.History {
         
         // we want to avoid partial changes to be applied in case the handler throws
@@ -216,12 +216,11 @@ extension StorageDispatcher
         
         //---
         
-        let outcomesToReport: ByTypeStorage.History
+        let mutationsToReport: ByTypeStorage.History
         
         do
         {
             try handler(&tmpCopyStorage)
-            outcomesToReport = tmpCopyStorage.resetHistory()
         }
         catch
         {
@@ -243,6 +242,8 @@ extension StorageDispatcher
         
         //---
         
+        mutationsToReport = tmpCopyStorage.resetHistory()
+        
         // if handler didn't throw - we apply changes to permanent storage
         storage = tmpCopyStorage // NOTE: the history has already been cleared
         
@@ -251,7 +252,7 @@ extension StorageDispatcher
         _outcomes.send(
             .processed(
                 storage: storage,
-                outcomes: outcomesToReport,
+                mutations: mutationsToReport,
                 env: .init(
                     scope: scope,
                     context: context,
@@ -262,6 +263,6 @@ extension StorageDispatcher
         
         //---
         
-        return outcomesToReport
+        return mutationsToReport
     }
 }
