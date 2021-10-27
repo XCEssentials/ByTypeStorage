@@ -25,7 +25,7 @@
  */
 
 public
-protocol SomeMutationRequest
+protocol SomeAccessRequest
 {
     var scope: String { get }
     
@@ -33,5 +33,5 @@ protocol SomeMutationRequest
     
     var location: Int { get }
     
-    var body: StorageDispatcher.MutationHandler { get }
+    var body: StorageDispatcher.AccessHandler { get }
 }

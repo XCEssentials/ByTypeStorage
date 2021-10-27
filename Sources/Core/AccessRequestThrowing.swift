@@ -25,10 +25,10 @@
  */
 
 public
-struct MutationRequestThrowing: SomeMutationRequest
+struct AccessRequestThrowing: SomeAccessRequest
 {
     public
-    typealias Body = StorageDispatcher.MutationHandler
+    typealias Body = StorageDispatcher.AccessHandler
     
     //---
     
