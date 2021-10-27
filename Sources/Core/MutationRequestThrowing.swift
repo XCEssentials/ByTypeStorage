@@ -39,6 +39,9 @@ struct MutationRequestThrowing: SomeMutationRequest
     let context: String
     
     public
+    let location: Int
+    
+    public
     let body: Body
     
     //---
@@ -47,11 +50,13 @@ struct MutationRequestThrowing: SomeMutationRequest
     init(
         scope: String = #file,
         context: String = #function,
+        location: Int = #line,
         handler: @escaping Body
     ) {
 
         self.scope = scope
         self.context = context
+        self.location = location
         self.body = handler
     }
 }

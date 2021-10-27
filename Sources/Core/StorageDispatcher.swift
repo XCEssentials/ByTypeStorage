@@ -92,6 +92,9 @@ extension StorageDispatcher
             
             public
             let context: String
+            
+            public
+            let location: Int
         }
     }
 }
@@ -161,7 +164,12 @@ extension StorageDispatcher
         request: MutationRequest
     ) -> ByTypeStorage.History {
 
-        mutate(scope: request.scope, context: request.context, handler: request.nonThrowingBody)
+        mutate(
+            scope: request.scope,
+            context: request.context,
+            location: request.location,
+            handler: request.nonThrowingBody
+        )
     }
     
     @discardableResult
@@ -169,7 +177,12 @@ extension StorageDispatcher
         request: MutationRequestThrowing
     ) throws -> ByTypeStorage.History {
 
-        try mutate(scope: request.scope, context: request.context, handler: request.body)
+        try mutate(
+            scope: request.scope,
+            context: request.context,
+            location: request.location,
+            handler: request.body
+        )
     }
     
     @discardableResult
@@ -181,7 +194,12 @@ extension StorageDispatcher
         try requests
             .flatMap {
                 
-                try mutate(scope: $0.scope, context: $0.context, handler: $0.body)
+                try mutate(
+                    scope: $0.scope,
+                    context: $0.context,
+                    location: $0.location,
+                    handler: $0.body
+                )
             }
     }
     
@@ -189,6 +207,7 @@ extension StorageDispatcher
     func mutate(
         scope: String = #file,
         context: String = #function,
+        location: Int = #line,
         handler: MutationHandler
     ) rethrows -> ByTypeStorage.History {
         
@@ -211,7 +230,8 @@ extension StorageDispatcher
                     reason: error,
                     env: .init(
                         scope: scope,
-                        context: context
+                        context: context,
+                        location: location
                     )
                 )
             )
@@ -234,7 +254,8 @@ extension StorageDispatcher
                 outcomes: outcomesToReport,
                 env: .init(
                     scope: scope,
-                    context: context
+                    context: context,
+                    location: location
                 )
             )
         )
