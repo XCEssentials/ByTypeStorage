@@ -38,11 +38,11 @@ class StorageDispatcher
     var storage: ByTypeStorage
     
     private
-    let _accessLog = PassthroughSubject<AccessRequestOutcome, Never>()
+    let _accessLog = PassthroughSubject<AccessEventReport, Never>()
     
     public
     lazy
-    var accessLog: AnyPublisher<AccessRequestOutcome, Never> = _accessLog.eraseToAnyPublisher()
+    var accessLog: AnyPublisher<AccessEventReport, Never> = _accessLog.eraseToAnyPublisher()
     
     //---
     
@@ -62,40 +62,72 @@ extension StorageDispatcher
 {
     typealias AccessHandler = (inout ByTypeStorage) throws -> Void
     
+    struct EnvironmentInfo
+    {
+        public
+        let timestamp = Date()
+        
+        public
+        let scope: String
+        
+        public
+        let context: String
+        
+        public
+        let location: Int
+    }
+    
+    struct AccessEventReport
+    {
+        public
+        let outcome: AccessRequestOutcome
+        
+        public
+        let storage: ByTypeStorage
+        
+        public
+        let env: EnvironmentInfo
+    }
+    
+    struct ProcessedAccessEventReport
+    {
+        public
+        let mutations: ByTypeStorage.History
+        
+        public
+        let storage: ByTypeStorage
+        
+        public
+        let env: EnvironmentInfo
+    }
+    
+    struct RejectedAccessEventReport
+    {
+        public
+        let reason: Error
+        
+        public
+        let storage: ByTypeStorage
+        
+        public
+        let env: EnvironmentInfo
+    }
+    
     enum AccessRequestOutcome
     {
         /// Mutation has been succesfully processed and already applied to the `storage`.
         ///
         /// Includes most recent snapshot of the `storage` and list of recent changes.
         case processed(
-            storage: ByTypeStorage,
-            mutations: ByTypeStorage.History,
-            env: EnvironmentInfo
+            mutations: ByTypeStorage.History
         )
         
         /// Mutation has been rejected due to an error thrown from mutation handler.
         ///
         /// NO changes have been applied to the `storage`.
         case rejected(
-            reason: Error,
-            env: EnvironmentInfo
+            reason: Error
         )
-        
-        public
-        struct EnvironmentInfo
-        {
-            public
-            let timestamp = Date()
-            
-            public
-            let scope: String
-            
-            public
-            let context: String
-            
-            public
-            let location: Int
-        }
     }
 }
 
@@ -225,8 +257,11 @@ extension StorageDispatcher
         catch
         {
             _accessLog.send(
-                .rejected(
-                    reason: error,
+                .init(
+                    outcome: .rejected(
+                        reason: error
+                        ),
+                    storage: storage,
                     env: .init(
                         scope: scope,
                         context: context,
@@ -250,9 +285,11 @@ extension StorageDispatcher
         //---
         
         _accessLog.send(
-            .processed(
+            .init(
+                outcome: .processed(
+                    mutations: mutationsToReport
+                ),
                 storage: storage,
-                mutations: mutationsToReport,
                 env: .init(
                     scope: scope,
                     context: context,
