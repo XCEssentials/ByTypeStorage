@@ -169,12 +169,12 @@ extension ByTypeStorage
 public
 extension ByTypeStorage
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
     {
         try? fetch(valueOfType: V.self)
     }
     
-    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
+    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type = V.self) throws -> V
     {
         guard
             let someResult = data[V.key]
