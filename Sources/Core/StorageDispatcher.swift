@@ -133,12 +133,12 @@ extension StorageDispatcher
 public
 extension StorageDispatcher
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type) -> V?
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
     {
         storage[V.self]
     }
     
-    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type) throws -> V
+    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type = V.self) throws -> V
     {
         try storage.fetch(valueOfType: V.self)
     }
