@@ -31,11 +31,10 @@ import Foundation
 public
 struct ByTypeStorage
 {
-    //internal
     private
     var data: [String: SomeStorable] = [:]
     
-    //internal
+    private
     var history: History = []
     
     //---
@@ -49,7 +48,7 @@ struct ByTypeStorage
 public
 extension ByTypeStorage
 {
-    enum GeneralError: Error
+    enum ReadDataError: Error
     {
         case keyNotFound(
             SomeKey.Type
@@ -64,6 +63,55 @@ extension ByTypeStorage
     
     typealias History = [(timestamp: Date, outcome: MutationAttemptOutcome)]
     
+    enum InitializationError: Error
+    {
+        case keyFoundWithSameValueType(
+            key: SomeKey.Type,
+            sameTypeValue: SomeStorable
+        )
+        
+        case keyFoundWithAnotherValueType(
+            key: SomeKey.Type,
+            anotherTypeValue: SomeStorable
+        )
+    }
+    
+    enum ActualizationError: Error
+    {
+        case keyNotFound(
+            SomeKey.Type
+        )
+        
+        case keyFoundWithAnotherValueType(
+            key: SomeKey.Type,
+            anotherTypeValue: SomeStorable
+        )
+    }
+    
+    enum TransitionError: Error
+    {
+        case keyNotFound(
+            SomeKey.Type
+        )
+        
+        case keyFoundWithSameValueType(
+            key: SomeKey.Type,
+            sameTypeValue: SomeStorable
+        )
+        
+        case unexpectedExistingValue(
+            key: SomeKey.Type,
+            existingValue: SomeStorable
+        )
+    }
+    
+    enum DeinitializationError: Error
+    {
+        case keyNotFound(
+            SomeKey.Type
+        )
+    }
+    
     enum MutationAttemptOutcome
     {
         case initialization(key: SomeKey.Type, newValue: SomeStorable)
@@ -72,7 +120,7 @@ extension ByTypeStorage
         case deinitialization(key: SomeKey.Type, oldValue: SomeStorable)
         
         /// No removal operation has been performed, because no such key has been found.
-        case nothingToRemove(GeneralError)
+        case nothingToRemove(key: SomeKey.Type)
     }
 }
 
@@ -95,7 +143,7 @@ extension ByTypeStorage
         }
         else
         {
-            throw GeneralError.keyNotFound(K.self)
+            throw ReadDataError.keyNotFound(K.self)
         }
     }
     
@@ -132,7 +180,7 @@ extension ByTypeStorage
             let someResult = data[V.key]
         else
         {
-            throw GeneralError.keyNotFound(V.Key.self)
+            throw ReadDataError.keyNotFound(V.Key.self)
         }
         
         //---
@@ -144,7 +192,7 @@ extension ByTypeStorage
         }
         else
         {
-            throw GeneralError.valueTypeMismatch(
+            throw ReadDataError.valueTypeMismatch(
                 key: V.Key.self,
                 expected: V.self,
                 actual: someResult
@@ -155,6 +203,189 @@ extension ByTypeStorage
     func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
     {
         self[V.self] != nil
+    }
+}
+
+// MARK: - SET data - SEMANTIC helpers
+
+public
+extension ByTypeStorage
+{
+    mutating
+    func initialize<V: SomeStorableByKey>(with newValue: V) throws
+    {
+        switch data[V.Key.name]
+        {
+            case .none:
+                
+                data[V.Key.name] = newValue
+                
+                //---
+                
+                logHistoryEvent(
+                    outcome: .initialization(
+                        key: V.Key.self,
+                        newValue: newValue
+                    )
+                )
+                
+            //---
+                    
+            case .some(let existingValue) where type(of: existingValue) == type(of: newValue):
+                
+                throw InitializationError.keyFoundWithSameValueType(
+                    key: V.Key.self,
+                    sameTypeValue: existingValue
+                )
+                
+            //---
+                
+            case .some(let someExistingValue):
+                
+                throw InitializationError.keyFoundWithAnotherValueType(
+                    key: V.Key.self,
+                    anotherTypeValue: someExistingValue
+                )
+        }
+    }
+    
+    mutating
+    func actualize<V: SomeStorableByKey>(with newValue: V) throws
+    {
+        switch data[V.Key.name]
+        {
+            case .some(let oldValue) where type(of: oldValue) == type(of: newValue):
+                
+                data[V.Key.name] = newValue
+                
+                logHistoryEvent(
+                    outcome: .actualization(
+                        key: V.Key.self,
+                        oldValue: oldValue,
+                        newValue: newValue
+                    )
+                )
+                
+            //---
+                
+            case .some(let someExistingValue): // type(of: someExistingValue) != type(of: newValue)
+                
+                throw ActualizationError.keyFoundWithAnotherValueType(
+                    key: V.Key.self,
+                    anotherTypeValue: someExistingValue
+                )
+                
+            //---
+             
+            case .none:
+                
+                throw ActualizationError.keyNotFound(
+                    V.Key.self
+                )
+        }
+    }
+    
+    mutating
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        from oldValueType: O.Type,
+        into newValue: N
+    ) throws where O.Key == N.Key {
+        
+        switch data[N.Key.name]
+        {
+            case .some(let oldValue) where oldValue is O:
+                
+                data[N.Key.name] = newValue
+                
+                logHistoryEvent(
+                    outcome: .transition(
+                        key: N.Key.self,
+                        oldValue: oldValue,
+                        newValue: newValue
+                    )
+                )
+                
+            //---
+                
+            case .some(let existingValue): //type(of: existingValue) != O
+                
+                throw TransitionError.unexpectedExistingValue(
+                    key: N.Key.self,
+                    existingValue: existingValue
+                )
+                
+            //---
+             
+            case .none:
+                
+                throw TransitionError.keyNotFound(
+                    N.Key.self
+                )
+        }
+    }
+    
+    mutating
+    func transition<V: SomeStorableByKey>(into newValue: V) throws
+    {
+        switch data[V.Key.name]
+        {
+            case .some(let oldValue) where type(of: oldValue) != V.self:
+                
+                data[V.Key.name] = newValue
+                
+                logHistoryEvent(
+                    outcome: .transition(
+                        key: V.Key.self,
+                        oldValue: oldValue,
+                        newValue: newValue
+                    )
+                )
+                
+            //---
+                
+            case .some(let existingValue): //type(of: existingValue) == type(of: newValue)
+                
+                throw TransitionError.keyFoundWithSameValueType(
+                    key: V.Key.self,
+                    sameTypeValue: existingValue
+                )
+                
+            //---
+             
+            case .none:
+                
+                throw TransitionError.keyNotFound(
+                    V.Key.self
+                )
+        }
+    }
+    
+    mutating
+    func deinitialize<K: SomeKey>(_: K.Type) throws
+    {
+        switch data[K.name]
+        {
+            case .some(let oldValue):
+                
+                data.removeValue(forKey: K.name) // NOTE: this is SDK method on Dictionary!
+                
+                //---
+                
+                logHistoryEvent(
+                    outcome: .deinitialization(
+                        key: K.self,
+                        oldValue: oldValue
+                    )
+                )
+                
+            //---
+                    
+            case .none:
+                
+                throw DeinitializationError.keyNotFound(
+                    K.self
+                )
+        }
     }
 }
 
@@ -211,13 +442,13 @@ extension ByTypeStorage
                 
             case (.none, .none):
                 
-                outcome = .nothingToRemove(.keyNotFound(V.Key.self))
+                outcome = .nothingToRemove(key: V.Key.self)
         }
         
         //---
               
-        history.append(
-            (Date(), outcome)
+        logHistoryEvent(
+            outcome: outcome
         )
         
         //---
@@ -251,13 +482,13 @@ extension ByTypeStorage
                 
             case .none:
                 
-                outcome = .nothingToRemove(.keyNotFound(K.self))
+                outcome = .nothingToRemove(key: K.self)
         }
         
         //---
               
-        history.append(
-            (Date(), outcome)
+        logHistoryEvent(
+            outcome: outcome
         )
         
         //---
@@ -271,6 +502,16 @@ extension ByTypeStorage
 //internal
 extension ByTypeStorage
 {
+    mutating
+    func logHistoryEvent(
+        outcome: MutationAttemptOutcome
+    ) {
+        
+        history.append(
+            (Date(), outcome)
+        )
+    }
+    
     /// Clear the history and return it's copy as result.
     mutating
     func resetHistory() -> History
