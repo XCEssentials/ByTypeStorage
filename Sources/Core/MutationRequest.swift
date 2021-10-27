@@ -38,6 +38,9 @@ struct MutationRequest: SomeMutationRequest
     public
     let context: String
     
+    public
+    let location: Int
+    
     let nonThrowingBody: NonThrowingBody
     
     public
@@ -52,11 +55,13 @@ struct MutationRequest: SomeMutationRequest
     init(
         scope: String = #file,
         context: String = #function,
+        location: Int = #line,
         handler: @escaping NonThrowingBody
     ) {
 
         self.scope = scope
         self.context = context
+        self.location = location
         self.nonThrowingBody = handler
     }
 }

@@ -31,5 +31,7 @@ protocol SomeMutationRequest
     
     var context: String { get }
     
+    var location: Int { get }
+    
     var body: StorageDispatcher.MutationHandler { get }
 }
