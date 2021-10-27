@@ -27,12 +27,17 @@
 // MARK: - GET data
 
 public
-extension SomeStorable
+extension SomeKey
 {
-    @MainActor
     static
-    func isPresent(in storage: StorageDispatcher) -> Bool
+    func fetch(from storage: ByTypeStorage) throws -> SomeStorable
     {
-        storage.hasValue(ofType: self)
+        try storage.fetch(valueForKey: self)
+    }
+
+    static
+    func isPresent(in storage: ByTypeStorage) -> Bool
+    {
+        storage.hasValue(withKey: self)
     }
 }
