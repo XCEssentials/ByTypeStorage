@@ -38,11 +38,11 @@ class StorageDispatcher
     var storage: ByTypeStorage
     
     private
-    let _outcomes = PassthroughSubject<AccessRequestOutcome, Never>()
+    let _accessLog = PassthroughSubject<AccessRequestOutcome, Never>()
     
     public
     lazy
-    var outcomes: AnyPublisher<AccessRequestOutcome, Never> = _outcomes.eraseToAnyPublisher()
+    var accessLog: AnyPublisher<AccessRequestOutcome, Never> = _accessLog.eraseToAnyPublisher()
     
     //---
     
@@ -224,7 +224,7 @@ extension StorageDispatcher
         }
         catch
         {
-            _outcomes.send(
+            _accessLog.send(
                 .rejected(
                     reason: error,
                     env: .init(
@@ -249,7 +249,7 @@ extension StorageDispatcher
         
         //---
         
-        _outcomes.send(
+        _accessLog.send(
             .processed(
                 storage: storage,
                 mutations: mutationsToReport,
