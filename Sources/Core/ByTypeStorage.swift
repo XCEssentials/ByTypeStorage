@@ -325,11 +325,14 @@ extension ByTypeStorage
     }
     
     mutating
-    func transition<V: SomeStorableByKey>(into newValue: V) throws
-    {
+    func transition<V: SomeStorableByKey>(
+        overrideSame: Bool = false,
+        into newValue: V
+    ) throws {
+        
         switch data[V.Key.name]
         {
-            case .some(let oldValue) where type(of: oldValue) != V.self:
+            case .some(let oldValue) where (type(of: oldValue) != V.self) || overrideSame:
                 
                 data[V.Key.name] = newValue
                 
@@ -343,7 +346,7 @@ extension ByTypeStorage
                 
             //---
                 
-            case .some(let existingValue): //type(of: existingValue) == type(of: newValue)
+            case .some(let existingValue): //type(of: existingValue) == type(of: newValue) && !overrideSame
                 
                 throw TransitionError.keyFoundWithSameValueType(
                     key: V.Key.self,
