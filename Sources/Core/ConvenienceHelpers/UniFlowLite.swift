@@ -28,7 +28,7 @@ public
 protocol SomeFeature: SomeSelfKey {}
 
 public
-protocol SomeFeatureState: SomeStorableByKey {}
+protocol SomeState: SomeStorableByKey {}
 
 //---
 
