@@ -23,6 +23,20 @@ extension SomeKey
 // MARK: - Public helpers
 
 public
+extension SomeKey
+{
+    static
+    func scenario(
+        _ description: String = ""
+    ) -> StorageDispatcher.AccessEventBinding.DescriptionProxy {
+        
+        .init(description: description)
+    }
+}
+
+//---
+
+public
 protocol NoBindings {}
 
 public
