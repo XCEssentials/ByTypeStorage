@@ -138,45 +138,68 @@ extension StorageDispatcher
         public
         let description: String
         
-        //internal
-        let body: (StorageDispatcher) -> AnyCancellable
+        public
+        let scope: String
+        
+        public
+        let location: Int
         
         @MainActor
+        fileprivate
+        let body: (StorageDispatcher) -> AnyCancellable
+        
+        //---
+        
         public
-        init<T, E: Error>(
-            _ description: String = "",
-            whenMaybe: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>,
-            then: @escaping (StorageDispatcher, T) -> Void
-        ) {
-
-            self.description = description
+        struct DescriptionProxy
+        {
+            public
+            let description: String
             
-            self.body = { dispatcher in
+            @MainActor
+            public
+            func when<P: Publisher>(
+                _ when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> P
+            ) -> WhenProxy<P.Output, P.Failure> {
                 
-                whenMaybe(dispatcher.accessLog)
-                    .sink(
-                        receiveCompletion: { _ in },
-                        receiveValue: { output in then(dispatcher, output) }
-                    )
+                .init(
+                    description: description,
+                    when: { when($0).eraseToAnyPublisher() }
+                )
             }
         }
         
-        @MainActor
         public
-        init<T>(
-            _ description: String = "",
-            when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, Never>,
-            then: @escaping (StorageDispatcher, T) -> Void
-        ) {
-
-            self.description = description
+        struct WhenProxy<T, E: Error>
+        {
+            public
+            let description: String
             
-            self.body = { dispatcher in
+            @MainActor
+            fileprivate
+            let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>
+            
+            @MainActor
+            public
+            func then(
+                scope: String = #file,
+                location: Int = #line,
+                _ then: @escaping (StorageDispatcher, T) -> Void
+            ) -> AccessEventBinding {
                 
-                when(dispatcher.accessLog)
-                    .sink(
-                        receiveValue: { output in then(dispatcher, output) }
-                    )
+                .init(
+                    description: description,
+                    scope: scope,
+                    location: location,
+                    body: { dispatcher in
+                        
+                        when(dispatcher.accessLog)
+                            .sink(
+                                receiveCompletion: { _ in },
+                                receiveValue: { output in then(dispatcher, output) }
+                            )
+                    }
+                )
             }
         }
     }
