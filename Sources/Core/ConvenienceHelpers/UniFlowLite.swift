@@ -41,7 +41,7 @@ protocol SomeSelfContainedFeature: SomeSelfKey, SomeStorableByKey {}
 open
 class FeatureShell
 {
-    private
+    public
     let dispatcher: StorageDispatcher
     
     public
