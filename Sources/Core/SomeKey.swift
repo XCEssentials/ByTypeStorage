@@ -7,19 +7,6 @@ protocol SomeKey
     var bindings: [StorageDispatcher.AccessEventBinding] { get }
 }
 
-// MARK: - Helpers
-
-public
-protocol NoBindings {}
-
-public
-extension NoBindings
-{
-    @MainActor
-    static
-    var bindings: [StorageDispatcher.AccessEventBinding] { [] }
-}
-
 // MARK: - Internal helpers
 
 //internal
@@ -31,4 +18,17 @@ extension SomeKey
     {
         .init(reflecting: Self.self)
     }
+}
+
+// MARK: - Public helpers
+
+public
+protocol NoBindings {}
+
+public
+extension NoBindings
+{
+    @MainActor
+    static
+    var bindings: [StorageDispatcher.AccessEventBinding] { [] }
 }
