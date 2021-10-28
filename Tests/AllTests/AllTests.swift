@@ -5,12 +5,31 @@ import XCEByTypeStorage
 
 //---
 
-struct One: SomeStorableByKey, SomeSelfKey
+struct One: SomeStorableByKey, SomeSelfKey, NoBindings
 {
     var val: Int
 }
 
-enum TheKey: SomeKey {}
+enum TheKey: SomeKey
+{
+    @MainActor
+    static
+    var bindings: [StorageDispatcher.AccessEventBinding] {
+        
+        [
+            .init(
+                "Print any initialized key",
+                when: {
+                    
+                    $0
+                },
+                then: { _, input in
+                    
+                    print("INITIALIZED: \(input)")
+                })
+        ]
+    }
+}
 
 struct Two: SomeStorableByKey
 {

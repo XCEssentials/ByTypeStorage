@@ -38,6 +38,9 @@ class StorageDispatcher
     var storage: ByTypeStorage
     
     private
+    var bindings: [String: [AnyCancellable]] = [:]
+    
+    private
     let _accessLog = PassthroughSubject<AccessEventReport, Never>()
     
     public
@@ -128,6 +131,35 @@ extension StorageDispatcher
         case rejected(
             reason: Error
         )
+    }
+    
+    struct AccessEventBinding
+    {
+        public
+        let description: String
+        
+        //internal
+        let body: (StorageDispatcher) -> AnyCancellable
+        
+        @MainActor
+        public
+        init<T, E: Error>(
+            _ description: String = "",
+            when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>,
+            then: @escaping (StorageDispatcher, T) -> Void
+        ) {
+
+            self.description = description
+            
+            self.body = { dispatcher in
+                
+                when(dispatcher.accessLog)
+                    .sink(
+                        receiveCompletion: { _ in },
+                        receiveValue: { output in then(dispatcher, output) }
+                    )
+            }
+        }
     }
 }
 
@@ -284,6 +316,12 @@ extension StorageDispatcher
         
         //---
         
+        installBindings(
+            basedOn: mutationsToReport
+        )
+        
+        //---
+        
         _accessLog.send(
             .init(
                 outcome: .processed(
@@ -300,6 +338,68 @@ extension StorageDispatcher
         
         //---
         
+        uninstallBindings(
+            basedOn: mutationsToReport
+        )
+        
+        //---
+        
         return mutationsToReport
+    }
+}
+
+// MARK: - Bindings management
+
+private
+extension StorageDispatcher
+{
+    /// This will install bindings for newly initialized keys.
+    func installBindings(
+        basedOn reports: ByTypeStorage.History
+    ) {
+        
+        reports
+            .compactMap { report -> SomeKey.Type? in
+                
+                switch report.outcome
+                {
+                    case .initialization(let key, _):
+                        return key
+                        
+                    default:
+                        return nil
+                }
+            }
+            .map {
+                
+                ( key: $0, bindings: $0.bindings.map { $0.body(self) } )
+            }
+            .forEach {
+                
+                self.bindings[$0.key.name] = $0.bindings
+            }
+    }
+    
+    /// This will uninstall bindings for recently deinitialized keys.
+    func uninstallBindings(
+        basedOn reports: ByTypeStorage.History
+    ) {
+        
+        reports
+            .compactMap { report -> SomeKey.Type? in
+                
+                switch report.outcome
+                {
+                    case .deinitialization(let key, _):
+                        return key
+                        
+                    default:
+                        return nil
+                }
+            }
+            .forEach {
+                
+                self.bindings.removeValue(forKey: $0.name)
+            }
     }
 }
