@@ -177,7 +177,7 @@ extension ByTypeStorage
     func fetch<V: SomeStorableByKey>(valueOfType _: V.Type = V.self) throws -> V
     {
         guard
-            let someResult = data[V.key]
+            let someResult = data[V.Key.name]
         else
         {
             throw ReadDataError.keyNotFound(V.Key.self)

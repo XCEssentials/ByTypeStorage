@@ -30,15 +30,15 @@ protocol SomeStorableByKey: SomeStorable
     associatedtype Key: SomeKey
 }
 
-// MARK: - Internal helpers
+// MARK: - Helpers
 
-//internal
+public
 extension SomeStorableByKey
 {
     /// `ByTypeStorage` will use this as actual key.
     static
-    var key: String
+    var keyType: SomeKey.Type
     {
-        Key.name
+        Key.self
     }
 }

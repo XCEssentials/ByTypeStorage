@@ -28,4 +28,8 @@
  Conformance to this protocol allows an instance of 'Self' type to be stored in any 'ByTypeStorage' instance.
  */
 public
-protocol SomeStorable {}
+protocol SomeStorable
+{
+    static
+    var keyType: SomeKey.Type { get }
+}
