@@ -145,7 +145,27 @@ extension StorageDispatcher
         public
         init<T, E: Error>(
             _ description: String = "",
-            when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>,
+            whenMaybe: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>,
+            then: @escaping (StorageDispatcher, T) -> Void
+        ) {
+
+            self.description = description
+            
+            self.body = { dispatcher in
+                
+                whenMaybe(dispatcher.accessLog)
+                    .sink(
+                        receiveCompletion: { _ in },
+                        receiveValue: { output in then(dispatcher, output) }
+                    )
+            }
+        }
+        
+        @MainActor
+        public
+        init<T>(
+            _ description: String = "",
+            when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, Never>,
             then: @escaping (StorageDispatcher, T) -> Void
         ) {
 
@@ -155,7 +175,6 @@ extension StorageDispatcher
                 
                 when(dispatcher.accessLog)
                     .sink(
-                        receiveCompletion: { _ in },
                         receiveValue: { output in then(dispatcher, output) }
                     )
             }
