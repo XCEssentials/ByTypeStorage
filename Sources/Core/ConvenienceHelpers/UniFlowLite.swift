@@ -28,7 +28,7 @@ public
 protocol SomeFeature: SomeSelfKey {}
 
 public
-protocol SomeFeatureState: SomeStorableByKey {}
+protocol SomeState: SomeStorableByKey {}
 
 //---
 
@@ -41,7 +41,7 @@ protocol SomeSelfContainedFeature: SomeSelfKey, SomeStorableByKey {}
 open
 class FeatureShell
 {
-    private
+    public
     let dispatcher: StorageDispatcher
     
     public
