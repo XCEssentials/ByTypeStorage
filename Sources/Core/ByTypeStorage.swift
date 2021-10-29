@@ -250,6 +250,22 @@ extension ByTypeStorage
     }
     
     mutating
+    func actualize<V: SomeStorableByKey>(
+        _ mutationHandler: (inout V) throws -> Void
+    ) throws {
+        
+        var state: V = try fetch()
+        
+        //---
+        
+        try mutationHandler(&state)
+        
+        //---
+        
+        try actualize(with: state)
+    }
+    
+    mutating
     func actualize<V: SomeStorableByKey>(with newValue: V) throws
     {
         switch data[V.Key.name]
@@ -283,6 +299,15 @@ extension ByTypeStorage
                     V.Key.self
                 )
         }
+    }
+    
+    mutating
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        from oldValueInstance: O,
+        into newValue: N
+    ) throws where O.Key == N.Key {
+        
+        try transition(from: O.self, into: newValue)
     }
     
     mutating
