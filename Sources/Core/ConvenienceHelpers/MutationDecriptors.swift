@@ -55,7 +55,7 @@ extension ByTypeStorage.MutationAttemptOutcome
         let newValue: SomeStorable
     }
     
-    var asInitializationOutcome: InitializationOutcome?
+    var asInitialization: InitializationOutcome?
     {
         switch self
         {
@@ -73,7 +73,7 @@ extension ByTypeStorage.MutationAttemptOutcome
     
     var isInitialization: Bool
     {
-        asInitializationOutcome != nil
+        asInitialization != nil
     }
 }
 
@@ -161,6 +161,86 @@ extension ByTypeStorage.MutationAttemptOutcome
     }
 }
 
+// MARK: - Actualization helpers
+
+public
+extension ByTypeStorage.MutationAttemptOutcome
+{
+    struct ActualizationOutcome
+    {
+        public
+        let key: SomeKey.Type
+        
+        public
+        let oldValue: SomeStorable
+        
+        public
+        let newValue: SomeStorable
+    }
+    
+    var asActualization: ActualizationOutcome?
+    {
+        switch self
+        {
+            case let .actualization(key, oldValue, newValue):
+                
+                return .init(
+                    key: key,
+                    oldValue: oldValue,
+                    newValue: newValue
+                )
+                
+            default:
+                return nil
+        }
+    }
+    
+    var isActualization: Bool
+    {
+        asActualization != nil
+    }
+}
+
+// MARK: - Transition helpers
+
+public
+extension ByTypeStorage.MutationAttemptOutcome
+{
+    struct TransitionOutcome
+    {
+        public
+        let key: SomeKey.Type
+        
+        public
+        let oldValue: SomeStorable
+        
+        public
+        let newValue: SomeStorable
+    }
+    
+    var asTransition: TransitionOutcome?
+    {
+        switch self
+        {
+            case let .transition(key, oldValue, newValue):
+                
+                return .init(
+                    key: key,
+                    oldValue: oldValue,
+                    newValue: newValue
+                )
+                
+            default:
+                return nil
+        }
+    }
+    
+    var isTransition: Bool
+    {
+        asTransition != nil
+    }
+}
+
 // MARK: - Deinitialization helpers
 
 public
@@ -194,5 +274,37 @@ extension ByTypeStorage.MutationAttemptOutcome
     var isDeinitialization: Bool
     {
         asDeinitializationOutcome != nil
+    }
+}
+
+// MARK: - BlankRemoval helpers
+
+public
+extension ByTypeStorage.MutationAttemptOutcome
+{
+    struct BlankRemovalOutcome
+    {
+        public
+        let key: SomeKey.Type
+    }
+    
+    var asBlankRemovalOutcome: BlankRemovalOutcome?
+    {
+        switch self
+        {
+            case let .nothingToRemove(key):
+                
+                return .init(
+                    key: key
+                )
+                
+            default:
+                return nil
+        }
+    }
+    
+    var isBlankRemoval: Bool
+    {
+        asBlankRemovalOutcome != nil
     }
 }
