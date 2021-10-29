@@ -251,7 +251,8 @@ extension ByTypeStorage
     
     mutating
     func actualize<V: SomeStorableByKey>(
-        _ mutationHandler: (inout V) throws -> Void
+        _ valueOfType: V.Type = V.self,
+        via mutationHandler: (inout V) throws -> Void
     ) throws {
         
         var state: V = try fetch()
