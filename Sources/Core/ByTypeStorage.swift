@@ -287,6 +287,15 @@ extension ByTypeStorage
     
     mutating
     func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        from oldValueInstance: O,
+        into newValue: N
+    ) throws where O.Key == N.Key {
+        
+        try transition(from: O.self, into: newValue)
+    }
+    
+    mutating
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
         from oldValueType: O.Type,
         into newValue: N
     ) throws where O.Key == N.Key {
