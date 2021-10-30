@@ -50,17 +50,17 @@ open
 class FeatureShell
 {
     public
-    let dispatcher: StorageDispatcher
+    let storage: StorageDispatcher
     
     public
     init(
-        with dispatcher: StorageDispatcher
+        with storageDispatcher: StorageDispatcher
     ) {
         
-        self.dispatcher = dispatcher
+        self.storage = storageDispatcher
     }
     
-    /// NOTE: this will result with updateing storage and sending updates to observers.
+    /// Group several read/write operations in one access report.
     public
     func access(
         scope: String = #file,
@@ -71,7 +71,7 @@ class FeatureShell
         
         // in uni-directionl data flow context we do not want to return anything directly
         // but we want to propagate thrown errors
-        _ = try dispatcher.access(
+        _ = try storage.access(
             scope: scope,
             context: context,
             location: location,
@@ -79,25 +79,14 @@ class FeatureShell
         )
     }
     
-    /// NOTE: this will result with updateing storage and sending updates to observers.
+    /// Wrap throwing piece of code and crash with `fatalError` if an error is thrown.
     public
     func must(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        _ handler: StorageDispatcher.AccessHandler
+        _ handler: () throws -> Void
     ) {
-        
         do
         {
-            // in uni-directionl data flow context we do not want to return anything directly
-            // but we want to propagate thrown errors
-            _ = try dispatcher.access(
-                scope: scope,
-                context: context,
-                location: location,
-                handler
-            )
+            try handler()
         }
         catch
         {
@@ -105,26 +94,16 @@ class FeatureShell
         }
     }
     
-    /// NOTE: this will result with updateing storage and sending updates to observers.
+    /// Wrap throwing piece of code and fail softly by ignoring thrown error.
     @discardableResult
     public
     func should(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        _ handler: StorageDispatcher.AccessHandler
+        _ handler: () throws -> Void
     ) -> Bool {
         
         do
         {
-            // in uni-directionl data flow context we do not want to return anything directly
-            // but we want to propagate thrown errors
-            _ = try dispatcher.access(
-                scope: scope,
-                context: context,
-                location: location,
-                handler
-            )
+            try handler()
             
             //---
             
@@ -133,6 +112,124 @@ class FeatureShell
         catch
         {
             return false
+        }
+    }
+}
+
+@MainActor
+public
+extension SomeKey where Self: FeatureShell
+{
+    @discardableResult
+    func ensureCurrentState<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        _ valueOfType: V.Type = V.self
+    ) throws -> V where V.Key == Self {
+        
+        try storage.fetch(
+            scope: scope,
+            context: context,
+            location: location,
+            valueOfType: V.self
+        )
+    }
+    
+    func initialize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        with newValue: V
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+            
+            try $0.initialize(with: newValue)
+        }
+    }
+    
+    func actualize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        _ valueOfType: V.Type = V.self,
+        via mutationHandler: (inout V) throws -> Void
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.actualize(V.self, via: mutationHandler)
+        }
+    }
+    
+    func actualize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        with newValue: V
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.actualize(with: newValue)
+        }
+    }
+    
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        from oldValueInstance: O,
+        into newValue: N
+    ) throws where O.Key == Self, N.Key == Self {
+        
+        try transition(
+            scope: scope,
+            context: context,
+            location: location,
+            from: O.self,
+            into: newValue
+        )
+    }
+    
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        from oldValueType: O.Type,
+        into newValue: N
+    ) throws where O.Key == Self, N.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.transition(from: O.self, into: newValue)
+        }
+    }
+    
+    func transition<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        overrideSame: Bool = false,
+        into newValue: V
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.transition(overrideSame: overrideSame, into: newValue)
+        }
+    }
+    
+    func deinitialize(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line
+    ) throws {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.deinitialize(Self.self)
         }
     }
 }
