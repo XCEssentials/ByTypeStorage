@@ -167,6 +167,31 @@ extension StorageDispatcher
                     when: { when($0).eraseToAnyPublisher() }
                 )
             }
+            
+            @MainActor
+            public
+            func when<M: SomeMutationDecriptor, P: Publisher>(
+                _: M.Type = M.self,
+                _ map: @escaping (AnyPublisher<M, Never>) -> P
+            ) -> WhenProxy<P.Output, P.Failure> {
+                
+                .init(
+                    description: description,
+                    when: { map($0.onProcessed.mutation(M.self)).eraseToAnyPublisher() }
+                )
+            }
+            
+            @MainActor
+            public
+            func when<M: SomeMutationDecriptor>(
+                _: M.Type = M.self
+            ) -> WhenProxy<M, Never> {
+                
+                .init(
+                    description: description,
+                    when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
+                )
+            }
         }
         
         public
