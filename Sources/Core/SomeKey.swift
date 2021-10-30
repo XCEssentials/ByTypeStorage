@@ -7,9 +7,7 @@ protocol SomeKey
     var bindings: [StorageDispatcher.AccessEventBinding] { get }
 }
 
-// MARK: - Internal helpers
-
-//internal
+public
 extension SomeKey
 {
     /// `ByTypeStorage` will use this as actual key.
@@ -18,13 +16,7 @@ extension SomeKey
     {
         .init(reflecting: Self.self)
     }
-}
-
-// MARK: - Public helpers
-
-public
-extension SomeKey
-{
+    
     @MainActor
     static
     func scenario(
