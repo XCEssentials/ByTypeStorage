@@ -24,287 +24,212 @@
  
  */
 
+// MARK: - SomeMutationDecriptor
+
 public
-extension ByTypeStorage.MutationAttemptOutcome
+protocol SomeMutationDecriptor
 {
-    var key: SomeKey.Type
-    {
-        switch self
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    )
+}
+
+// MARK: - Initialization
+
+public
+struct InitializationInto<New: SomeStorableByKey>: SomeMutationDecriptor
+{
+    public
+    let newValue: New
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
+        
+        guard
+            let newValue = mutationOutcome.asInitialization?.newValue as? New
+        else
         {
-            case .initialization(let key, _),
-                    .actualization(let key, _, _),
-                    .transition(let key, _, _),
-                    .deinitialization(let key, _),
-                    .nothingToRemove(let key):
-                return key
+            return nil
         }
+        
+        //---
+        
+        self.newValue = newValue
     }
 }
 
-// MARK: - Initialization helpers
+// MARK: - Setting
 
+/// Operation that results with given key being present in the storage.
 public
-extension ByTypeStorage.MutationAttemptOutcome
+struct SettingInto<New: SomeStorableByKey>: SomeMutationDecriptor
 {
-    struct InitializationOutcome
-    {
-        public
-        let key: SomeKey.Type
+    public
+    let newValue: New
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
         
-        public
-        let newValue: SomeStorable
-    }
-    
-    var asInitialization: InitializationOutcome?
-    {
-        switch self
+        guard
+            let newValue = mutationOutcome.asSetting?.newValue as? New
+        else
         {
-            case let .initialization(key, newValue):
-                
-                return .init(
-                    key: key,
-                    newValue: newValue
-                )
-                
-            default:
-                return nil
+            return nil
         }
-    }
-    
-    var isInitialization: Bool
-    {
-        asInitialization != nil
+        
+        //---
+        
+        self.newValue = newValue
     }
 }
 
-// MARK: - Setting helpers
+// MARK: - Actualization
 
+/// Operation that has both old and new values.
 public
-extension ByTypeStorage.MutationAttemptOutcome
+struct ActualizationOf<V: SomeStorableByKey>: SomeMutationDecriptor
 {
-    /// Operation that results with given key being present in the storage.
-    struct SettingOutcome
-    {
-        public
-        let key: SomeKey.Type
+    public
+    let oldValue: V
+    
+    public
+    let newValue: V
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
         
-        public
-        let newValue: SomeStorable
-    }
-    
-    /// Operation that results with given key being present in the storage.
-    var asSetting: SettingOutcome?
-    {
-        switch self
+        guard
+            let oldValue = mutationOutcome.asActualization?.oldValue as? V,
+            let newValue = mutationOutcome.asActualization?.newValue as? V
+        else
         {
-            case let .initialization(key, newValue),
-                    let .actualization(key, _, newValue),
-                    let .transition(key, _, newValue):
-                
-                return .init(
-                    key: key,
-                    newValue: newValue
-                )
-                
-            default:
-                return nil
+            return nil
         }
-    }
-    
-    /// Operation that results with given key being present in the storage.
-    var isSetting: Bool
-    {
-        asSetting != nil
+        
+        //---
+        
+        self.oldValue = oldValue
+        self.newValue = newValue
     }
 }
 
-// MARK: - Update helpers
+// MARK: - Transition
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
 {
-    /// Operation that has both old and new values.
-    struct UpdateOutcome
-    {
-        public
-        let key: SomeKey.Type
-        
-        public
-        let oldValue: SomeStorable
-        
-        public
-        let newValue: SomeStorable
-    }
+    public
+    let oldValue: Old
     
-    /// Operation that has both old and new values.
-    var asUpdate: UpdateOutcome?
-    {
-        switch self
+    public
+    let newValue: SomeStorable
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
+        
+        guard
+            let oldValue = mutationOutcome.asTransition?.oldValue as? Old,
+            let newValue = mutationOutcome.asTransition?.newValue
+        else
         {
-            case let .actualization(key, oldValue, newValue), let .transition(key, oldValue, newValue):
-                
-                return .init(
-                    key: key,
-                    oldValue: oldValue,
-                    newValue: newValue
-                )
-                
-            default:
-                return nil
+            return nil
         }
-    }
-    
-    /// Operation that has both old and new values.
-    var isUpdate: Bool
-    {
-        asUpdate != nil
+        
+        //---
+        
+        self.oldValue = oldValue
+        self.newValue = newValue
     }
 }
 
-// MARK: - Actualization helpers
-
 public
-extension ByTypeStorage.MutationAttemptOutcome
+struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMutationDecriptor
 {
-    struct ActualizationOutcome
-    {
-        public
-        let key: SomeKey.Type
-        
-        public
-        let oldValue: SomeStorable
-        
-        public
-        let newValue: SomeStorable
-    }
+    public
+    let oldValue: Old
     
-    var asActualization: ActualizationOutcome?
-    {
-        switch self
+    public
+    let newValue: New
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
+        
+        guard
+            let oldValue = mutationOutcome.asTransition?.oldValue as? Old,
+            let newValue = mutationOutcome.asTransition?.newValue as? New
+        else
         {
-            case let .actualization(key, oldValue, newValue):
-                
-                return .init(
-                    key: key,
-                    oldValue: oldValue,
-                    newValue: newValue
-                )
-                
-            default:
-                return nil
+            return nil
         }
-    }
-    
-    var isActualization: Bool
-    {
-        asActualization != nil
+        
+        //---
+        
+        self.oldValue = oldValue
+        self.newValue = newValue
     }
 }
 
-// MARK: - Transition helpers
-
 public
-extension ByTypeStorage.MutationAttemptOutcome
+struct TransitionInto<New: SomeStorableByKey>: SomeMutationDecriptor
 {
-    struct TransitionOutcome
-    {
-        public
-        let key: SomeKey.Type
-        
-        public
-        let oldValue: SomeStorable
-        
-        public
-        let newValue: SomeStorable
-    }
+    public
+    let oldValue: SomeStorable
     
-    var asTransition: TransitionOutcome?
-    {
-        switch self
+    public
+    let newValue: New
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
+        
+        guard
+            let oldValue = mutationOutcome.asTransition?.oldValue,
+            let newValue = mutationOutcome.asTransition?.newValue as? New
+        else
         {
-            case let .transition(key, oldValue, newValue):
-                
-                return .init(
-                    key: key,
-                    oldValue: oldValue,
-                    newValue: newValue
-                )
-                
-            default:
-                return nil
+            return nil
         }
-    }
-    
-    var isTransition: Bool
-    {
-        asTransition != nil
+        
+        //---
+        
+        self.oldValue = oldValue
+        self.newValue = newValue
     }
 }
 
-// MARK: - Deinitialization helpers
+// MARK: - Deinitialization
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+struct DeinitializationFrom<Old: SomeStorableByKey>
 {
-    struct DeinitializationOutcome
-    {
-        public
-        let key: SomeKey.Type
+    public
+    let oldValue: Old
+    
+    public
+    init?(
+        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+    ) {
         
-        public
-        let oldValue: SomeStorable
-    }
-    
-    var asDeinitializationOutcome: DeinitializationOutcome?
-    {
-        switch self
+        guard
+            let oldValue = mutationOutcome.asDeinitialization?.oldValue as? Old
+        else
         {
-            case let .deinitialization(key, oldValue):
-                
-                return .init(
-                    key: key,
-                    oldValue: oldValue
-                )
-                
-            default:
-                return nil
+            return nil
         }
-    }
-    
-    var isDeinitialization: Bool
-    {
-        asDeinitializationOutcome != nil
-    }
-}
-
-// MARK: - BlankRemoval helpers
-
-public
-extension ByTypeStorage.MutationAttemptOutcome
-{
-    struct BlankRemovalOutcome
-    {
-        public
-        let key: SomeKey.Type
-    }
-    
-    var asBlankRemovalOutcome: BlankRemovalOutcome?
-    {
-        switch self
-        {
-            case let .nothingToRemove(key):
-                
-                return .init(
-                    key: key
-                )
-                
-            default:
-                return nil
-        }
-    }
-    
-    var isBlankRemoval: Bool
-    {
-        asBlankRemovalOutcome != nil
+        
+        //---
+        
+        self.oldValue = oldValue
     }
 }
