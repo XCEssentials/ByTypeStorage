@@ -162,17 +162,6 @@ extension ByTypeStorage
     }
 }
 
-// MARK: - GET data - SomeStorable
-
-public
-extension ByTypeStorage
-{
-    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
-    {
-        data.values.first { $0 is V } != nil
-    }
-}
-
 // MARK: - GET data - SomeStorableByKey
 
 public
