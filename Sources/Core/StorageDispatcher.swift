@@ -226,6 +226,34 @@ extension StorageDispatcher
                     }
                 )
             }
+            
+            @MainActor
+            public
+            func then(
+                scope: String = #file,
+                location: Int = #line,
+                _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
+            ) -> AccessEventBinding {
+                
+                then(scope: scope, location: location) { dispatcher, _ in
+                    
+                    dispatcherOnlyHandler(dispatcher)
+                }
+            }
+            
+            @MainActor
+            public
+            func then(
+                scope: String = #file,
+                location: Int = #line,
+                _ outputOnlyHandler: @escaping (T) -> Void
+            ) -> AccessEventBinding {
+                
+                then(scope: scope, location: location) { _, output in
+                    
+                    outputOnlyHandler(output)
+                }
+            }
         }
     }
 }
