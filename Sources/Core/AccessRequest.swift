@@ -25,10 +25,10 @@
  */
 
 public
-struct AccessRequest: SomeAccessRequest
+struct AccessRequest
 {
     public
-    typealias NonThrowingBody = (inout ByTypeStorage) -> Void
+    typealias Body = StorageDispatcher.AccessHandler
     
     //---
     
@@ -41,13 +41,8 @@ struct AccessRequest: SomeAccessRequest
     public
     let location: Int
     
-    let nonThrowingBody: NonThrowingBody
-    
     public
-    var body: AccessRequestThrowing.Body
-    {
-        { nonThrowingBody(&$0) }
-    }
+    let body: Body
     
     //---
     
@@ -56,12 +51,12 @@ struct AccessRequest: SomeAccessRequest
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
-        handler: @escaping NonThrowingBody
+        handler: @escaping Body
     ) {
 
         self.scope = scope
         self.context = context
         self.location = location
-        self.nonThrowingBody = handler
+        self.body = handler
     }
 }
