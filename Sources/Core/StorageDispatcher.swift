@@ -349,30 +349,49 @@ extension StorageDispatcher
 public
 extension StorageDispatcher
 {
-    subscript<K: SomeKey>(_: K.Type) -> SomeStorable?
-    {
-        storage[K.self]
+    func fetch<K: SomeKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        valueForKey keyType: K.Type
+    ) throws -> SomeStorable {
+        
+        var result: SomeStorable!
+        
+        //---
+        
+        try access(scope: scope, context: context, location: location) {
+            
+            result = try $0.fetch(valueForKey: K.self)
+        }
+        
+        //---
+        
+        return result
     }
     
-    func fetch<K: SomeKey>(valueForKey keyType: K.Type) throws -> SomeStorable
-    {
-        try storage.fetch(valueForKey: K.self)
-    }
-    
-    func hasValue<K: SomeKey>(withKey _: K.Type) -> Bool
-    {
-        storage.hasValue(withKey: K.self)
-    }
-}
-
-// MARK: - GET data - SomeStorable
-
-public
-extension StorageDispatcher
-{
-    func hasValue<V: SomeStorable>(ofType _: V.Type) -> Bool
-    {
-        storage.hasValue(ofType: V.self)
+    func hasValue<K: SomeKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        withKey _: K.Type
+    ) -> Bool {
+        
+        do
+        {
+            _ = try fetch(
+                scope: scope,
+                context: context,
+                location: location,
+                valueForKey: K.self
+            )
+            
+            return true
+        }
+        catch
+        {
+            return false
+        }
     }
 }
 
@@ -381,21 +400,51 @@ extension StorageDispatcher
 public
 extension StorageDispatcher
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
-    {
-        storage[V.self]
-    }
-    
-    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type = V.self) throws -> V
-    {
-        try storage.fetch(valueOfType: V.self)
+    func fetch<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        valueOfType _: V.Type = V.self
+    ) throws -> V {
+        
+        var result: V!
+        
+        //---
+        
+        try access(scope: scope, context: context, location: location) {
+            
+            result = try $0.fetch(valueOfType: V.self)
+        }
+        
+        //---
+        
+        return result
     }
     
     //---
     
-    func hasValue<V: SomeStorableByKey>(ofType _: V.Type) -> Bool
-    {
-        storage.hasValue(ofType: V.self)
+    func hasValue<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        ofType _: V.Type
+    ) -> Bool {
+        
+        do
+        {
+            _ = try fetch(
+                scope: scope,
+                context: context,
+                location: location,
+                valueOfType: V.self
+            )
+            
+            return true
+        }
+        catch
+        {
+            return false
+        }
     }
 }
 
