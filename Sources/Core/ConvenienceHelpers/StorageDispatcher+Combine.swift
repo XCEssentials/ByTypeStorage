@@ -3,7 +3,7 @@ import Combine
 //---
 
 public
-extension AnyPublisher where Output == StorageDispatcher.AccessEventReport, Failure == Never
+extension Publisher where Output == StorageDispatcher.AccessEventReport, Failure == Never
 {
     var onProcessed: AnyPublisher<StorageDispatcher.ProcessedAccessEventReport, Failure>
     {
@@ -48,6 +48,35 @@ extension AnyPublisher where Output == StorageDispatcher.AccessEventReport, Fail
                         return nil
                 }
             }
+            .eraseToAnyPublisher()
+    }
+}
+
+//---
+
+public
+extension Publisher where Output == StorageDispatcher.ProcessedAccessEventReport, Failure == Never
+{
+    var mutation: AnyPublisher<ByTypeStorage.MutationAttemptOutcome, Failure>
+    {
+        self
+            .flatMap(
+                \.mutations.publisher
+            )
+            .map(
+                \.outcome
+            )
+            .eraseToAnyPublisher()
+    }
+    
+    func mutation<T: SomeMutationDecriptor>(
+        _: T.Type
+    ) -> AnyPublisher<T, Failure> {
+        
+        mutation
+            .compactMap(
+                T.init(from:)
+            )
             .eraseToAnyPublisher()
     }
 }
