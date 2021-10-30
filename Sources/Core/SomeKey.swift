@@ -25,6 +25,7 @@ extension SomeKey
 public
 extension SomeKey
 {
+    @MainActor
     static
     func scenario(
         _ description: String = ""

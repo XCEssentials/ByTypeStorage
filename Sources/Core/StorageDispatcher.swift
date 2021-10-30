@@ -133,6 +133,7 @@ extension StorageDispatcher
         )
     }
     
+    @MainActor
     struct AccessEventBinding
     {
         public
@@ -150,6 +151,7 @@ extension StorageDispatcher
         
         //---
         
+        @MainActor
         public
         struct DescriptionProxy
         {
@@ -194,17 +196,16 @@ extension StorageDispatcher
             }
         }
         
+        @MainActor
         public
         struct WhenProxy<T, E: Error>
         {
             public
             let description: String
             
-            @MainActor
             fileprivate
             let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>
             
-            @MainActor
             public
             func then(
                 scope: String = #file,
@@ -227,7 +228,6 @@ extension StorageDispatcher
                 )
             }
             
-            @MainActor
             public
             func then(
                 scope: String = #file,
@@ -241,7 +241,6 @@ extension StorageDispatcher
                 }
             }
             
-            @MainActor
             public
             func then(
                 scope: String = #file,
