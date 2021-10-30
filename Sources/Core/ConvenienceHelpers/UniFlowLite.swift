@@ -115,3 +115,121 @@ class FeatureShell
         }
     }
 }
+
+@MainActor
+public
+extension SomeKey where Self: FeatureShell
+{
+    @discardableResult
+    func ensureCurrentState<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        _ valueOfType: V.Type = V.self
+    ) throws -> V where V.Key == Self {
+        
+        try storage.fetch(
+            scope: scope,
+            context: context,
+            location: location,
+            valueOfType: V.self
+        )
+    }
+    
+    func initialize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        with newValue: V
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+            
+            try $0.initialize(with: newValue)
+        }
+    }
+    
+    func actualize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        _ valueOfType: V.Type = V.self,
+        via mutationHandler: (inout V) throws -> Void
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.actualize(V.self, via: mutationHandler)
+        }
+    }
+    
+    func actualize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        with newValue: V
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.actualize(with: newValue)
+        }
+    }
+    
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        from oldValueInstance: O,
+        into newValue: N
+    ) throws where O.Key == Self, N.Key == Self {
+        
+        try transition(
+            scope: scope,
+            context: context,
+            location: location,
+            from: O.self,
+            into: newValue
+        )
+    }
+    
+    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        from oldValueType: O.Type,
+        into newValue: N
+    ) throws where O.Key == Self, N.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.transition(from: O.self, into: newValue)
+        }
+    }
+    
+    func transition<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        overrideSame: Bool = false,
+        into newValue: V
+    ) throws where V.Key == Self {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.transition(overrideSame: overrideSame, into: newValue)
+        }
+    }
+    
+    func deinitialize(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line
+    ) throws {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.deinitialize(Self.self)
+        }
+    }
+}
