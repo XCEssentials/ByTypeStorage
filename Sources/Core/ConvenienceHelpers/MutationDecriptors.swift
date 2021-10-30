@@ -24,13 +24,17 @@
  
  */
 
+import Foundation
+
 // MARK: - SomeMutationDecriptor
 
 public
 protocol SomeMutationDecriptor
 {
+    var timestamp: Date { get }
+    
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     )
 }
 
@@ -40,15 +44,18 @@ public
 struct InitializationInto<New: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
+    let timestamp: Date
+
+    public
     let newValue: New
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let newValue = mutationOutcome.asInitialization?.newValue as? New
+            let newValue = mutationReport.asInitialization?.newValue as? New
         else
         {
             return nil
@@ -56,6 +63,7 @@ struct InitializationInto<New: SomeStorableByKey>: SomeMutationDecriptor
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.newValue = newValue
     }
 }
@@ -67,15 +75,18 @@ public
 struct SettingInto<New: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
+    let timestamp: Date
+
+    public
     let newValue: New
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let newValue = mutationOutcome.asSetting?.newValue as? New
+            let newValue = mutationReport.asSetting?.newValue as? New
         else
         {
             return nil
@@ -83,6 +94,7 @@ struct SettingInto<New: SomeStorableByKey>: SomeMutationDecriptor
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.newValue = newValue
     }
 }
@@ -94,6 +106,9 @@ public
 struct ActualizationOf<V: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
+    let timestamp: Date
+
+    public
     let oldValue: V
     
     public
@@ -101,12 +116,12 @@ struct ActualizationOf<V: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let oldValue = mutationOutcome.asActualization?.oldValue as? V,
-            let newValue = mutationOutcome.asActualization?.newValue as? V
+            let oldValue = mutationReport.asActualization?.oldValue as? V,
+            let newValue = mutationReport.asActualization?.newValue as? V
         else
         {
             return nil
@@ -114,6 +129,7 @@ struct ActualizationOf<V: SomeStorableByKey>: SomeMutationDecriptor
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.oldValue = oldValue
         self.newValue = newValue
     }
@@ -125,6 +141,9 @@ public
 struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
+    let timestamp: Date
+
+    public
     let oldValue: Old
     
     public
@@ -132,12 +151,12 @@ struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let oldValue = mutationOutcome.asTransition?.oldValue as? Old,
-            let newValue = mutationOutcome.asTransition?.newValue
+            let oldValue = mutationReport.asTransition?.oldValue as? Old,
+            let newValue = mutationReport.asTransition?.newValue
         else
         {
             return nil
@@ -145,6 +164,7 @@ struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.oldValue = oldValue
         self.newValue = newValue
     }
@@ -154,6 +174,9 @@ public
 struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
+    let timestamp: Date
+
+    public
     let oldValue: Old
     
     public
@@ -161,12 +184,12 @@ struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMu
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let oldValue = mutationOutcome.asTransition?.oldValue as? Old,
-            let newValue = mutationOutcome.asTransition?.newValue as? New
+            let oldValue = mutationReport.asTransition?.oldValue as? Old,
+            let newValue = mutationReport.asTransition?.newValue as? New
         else
         {
             return nil
@@ -174,6 +197,7 @@ struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMu
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.oldValue = oldValue
         self.newValue = newValue
     }
@@ -183,6 +207,9 @@ public
 struct TransitionInto<New: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
+    let timestamp: Date
+
+    public
     let oldValue: SomeStorable
     
     public
@@ -190,12 +217,12 @@ struct TransitionInto<New: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let oldValue = mutationOutcome.asTransition?.oldValue,
-            let newValue = mutationOutcome.asTransition?.newValue as? New
+            let oldValue = mutationReport.asTransition?.oldValue,
+            let newValue = mutationReport.asTransition?.newValue as? New
         else
         {
             return nil
@@ -203,6 +230,7 @@ struct TransitionInto<New: SomeStorableByKey>: SomeMutationDecriptor
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.oldValue = oldValue
         self.newValue = newValue
     }
@@ -214,15 +242,18 @@ public
 struct DeinitializationFrom<Old: SomeStorableByKey>
 {
     public
+    let timestamp: Date
+
+    public
     let oldValue: Old
     
     public
     init?(
-        from mutationOutcome: ByTypeStorage.MutationAttemptOutcome
+        from mutationReport: ByTypeStorage.MutationAttemptReport
     ) {
         
         guard
-            let oldValue = mutationOutcome.asDeinitialization?.oldValue as? Old
+            let oldValue = mutationReport.asDeinitialization?.oldValue as? Old
         else
         {
             return nil
@@ -230,6 +261,7 @@ struct DeinitializationFrom<Old: SomeStorableByKey>
         
         //---
         
+        self.timestamp = mutationReport.timestamp
         self.oldValue = oldValue
     }
 }
