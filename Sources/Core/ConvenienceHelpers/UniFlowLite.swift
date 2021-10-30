@@ -80,6 +80,9 @@ class FeatureShell
     }
     
     /// Wrap throwing piece of code and crash with `fatalError` if an error is thrown.
+    ///
+    /// We call "must" and "must not" words of obligation. "Must" is the only word that imposes
+    /// a legal obligation on your readers to tell them something is mandatory.
     public
     func must(
         scope: String = #file,
@@ -103,8 +106,10 @@ class FeatureShell
     }
     
     /// Wrap throwing piece of code and crash in DEBUG ONLY (via assertation) if an error is thrown.
+    ///
+    /// 'Shall' is used to express ideas and laws.
     public
-    func assert(
+    func shall(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -126,6 +131,8 @@ class FeatureShell
     }
     
     /// Wrap throwing piece of code and fail softly by ignoring thrown error.
+    ///
+    /// 'Should' is used to express personal opinions and desires, and primarily to give advice.
     @discardableResult
     public
     func should(
