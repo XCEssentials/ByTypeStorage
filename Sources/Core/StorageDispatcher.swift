@@ -213,6 +213,28 @@ extension StorageDispatcher
             }
             
             public
+            func given<Out>(
+                _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Out?
+            ) -> ThenContext<Out, E> {
+                
+                given { dispatcher, _ in
+                    
+                    dispatcherOnlyHandler(dispatcher)
+                }
+            }
+            
+            public
+            func given<Out>(
+                _ outputOnlyHandler: @escaping (T) -> Out?
+            ) -> ThenContext<Out, E> {
+                
+                given { _, output in
+                    
+                    outputOnlyHandler(output)
+                }
+            }
+            
+            public
             func then(
                 scope: String = #file,
                 location: Int = #line,
