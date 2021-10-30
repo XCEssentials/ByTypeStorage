@@ -34,8 +34,11 @@ struct ByTypeStorage
     private
     var data: [String: SomeStorable] = [:]
     
-    private
+    public private(set)
     var history: History = []
+    
+    public private(set)
+    var lastHistoryResetId: String = UUID().uuidString
     
     //---
     
@@ -545,6 +548,7 @@ extension ByTypeStorage
     {
         let result = history
         history.removeAll()
+        lastHistoryResetId = UUID().uuidString
         
         //---
         

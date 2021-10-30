@@ -66,7 +66,7 @@ class FeatureShell
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
-        _ handler: StorageDispatcher.AccessHandler
+        _ handler: () throws -> Void
     ) throws {
         
         // in uni-directionl data flow context we do not want to return anything directly
@@ -75,18 +75,26 @@ class FeatureShell
             scope: scope,
             context: context,
             location: location,
-            handler
+            { _ in try handler() }
         )
     }
     
     /// Wrap throwing piece of code and crash with `fatalError` if an error is thrown.
     public
     func must(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
         _ handler: () throws -> Void
     ) {
         do
         {
-            try handler()
+            try storage.access(
+                scope: scope,
+                context: context,
+                location: location,
+                { _ in try handler() }
+            )
         }
         catch
         {
@@ -94,16 +102,47 @@ class FeatureShell
         }
     }
     
+    /// Wrap throwing piece of code and crash in DEBUG ONLY (via assertation) if an error is thrown.
+    public
+    func assert(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        _ handler: () throws -> Void
+    ) {
+        do
+        {
+            try storage.access(
+                scope: scope,
+                context: context,
+                location: location,
+                { _ in try handler() }
+            )
+        }
+        catch
+        {
+            assertionFailure(error.localizedDescription)
+        }
+    }
+    
     /// Wrap throwing piece of code and fail softly by ignoring thrown error.
     @discardableResult
     public
     func should(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
         _ handler: () throws -> Void
     ) -> Bool {
         
         do
         {
-            try handler()
+            try storage.access(
+                scope: scope,
+                context: context,
+                location: location,
+                { _ in try handler() }
+            )
             
             //---
             
@@ -143,7 +182,7 @@ extension SomeKey where Self: FeatureShell
         with newValue: V
     ) throws where V.Key == Self {
         
-        try access(scope: scope, context: context, location: location) {
+        try storage.access(scope: scope, context: context, location: location) {
             
             try $0.initialize(with: newValue)
         }
@@ -157,7 +196,7 @@ extension SomeKey where Self: FeatureShell
         via mutationHandler: (inout V) throws -> Void
     ) throws where V.Key == Self {
         
-        try access(scope: scope, context: context, location: location) {
+        try storage.access(scope: scope, context: context, location: location) {
            
             try $0.actualize(V.self, via: mutationHandler)
         }
@@ -170,7 +209,7 @@ extension SomeKey where Self: FeatureShell
         with newValue: V
     ) throws where V.Key == Self {
         
-        try access(scope: scope, context: context, location: location) {
+        try storage.access(scope: scope, context: context, location: location) {
            
             try $0.actualize(with: newValue)
         }
@@ -201,7 +240,7 @@ extension SomeKey where Self: FeatureShell
         into newValue: N
     ) throws where O.Key == Self, N.Key == Self {
         
-        try access(scope: scope, context: context, location: location) {
+        try storage.access(scope: scope, context: context, location: location) {
            
             try $0.transition(from: O.self, into: newValue)
         }
@@ -215,7 +254,7 @@ extension SomeKey where Self: FeatureShell
         into newValue: V
     ) throws where V.Key == Self {
         
-        try access(scope: scope, context: context, location: location) {
+        try storage.access(scope: scope, context: context, location: location) {
            
             try $0.transition(overrideSame: overrideSame, into: newValue)
         }
@@ -227,7 +266,7 @@ extension SomeKey where Self: FeatureShell
         location: Int = #line
     ) throws {
         
-        try access(scope: scope, context: context, location: location) {
+        try storage.access(scope: scope, context: context, location: location) {
            
             try $0.deinitialize(Self.self)
         }
