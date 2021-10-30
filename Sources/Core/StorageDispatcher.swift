@@ -172,14 +172,14 @@ extension StorageDispatcher
             
             @MainActor
             public
-            func when<M: SomeMutationDecriptor, P: Publisher>(
+            func when<M: SomeMutationDecriptor, T>(
                 _: M.Type = M.self,
-                _ map: @escaping (AnyPublisher<M, Never>) -> P
-            ) -> WhenProxy<P.Output, P.Failure> {
+                _ mapMaybe: @escaping (M) -> T?
+            ) -> WhenProxy<T, Never> {
                 
                 .init(
                     description: description,
-                    when: { map($0.onProcessed.mutation(M.self)).eraseToAnyPublisher() }
+                    when: { $0.onProcessed.mutation(M.self).compactMap(mapMaybe).eraseToAnyPublisher() }
                 )
             }
             
