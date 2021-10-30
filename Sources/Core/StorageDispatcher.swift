@@ -65,6 +65,11 @@ extension StorageDispatcher
 {
     typealias AccessHandler = (inout ByTypeStorage) throws -> Void
     
+    enum AccessError: Error
+    {
+        case concurrentMutatingAccessDetected
+    }
+    
     struct EnvironmentInfo
     {
         public
@@ -456,32 +461,14 @@ extension StorageDispatcher
     @discardableResult
     func process(
         _ request: AccessRequest
-    ) -> ByTypeStorage.History {
-
-        access(
-            scope: request.scope,
-            context: request.context,
-            location: request.location,
-            request.nonThrowingBody
-        )
-    }
-    
-    @discardableResult
-    func process(
-        _ request: AccessRequestThrowing
     ) throws -> ByTypeStorage.History {
 
-        try access(
-            scope: request.scope,
-            context: request.context,
-            location: request.location,
-            request.body
-        )
+        try process([request])
     }
     
     @discardableResult
     func process(
-        _ requests: [SomeAccessRequest]
+        _ requests: [AccessRequest]
     ) throws -> ByTypeStorage.History {
 
         // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
@@ -497,16 +484,18 @@ extension StorageDispatcher
             }
     }
     
+    /// Transaction-like isolation for mutations on the storage.
     @discardableResult
     func access(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
         _ handler: AccessHandler
-    ) rethrows -> ByTypeStorage.History {
+    ) throws -> ByTypeStorage.History {
         
         // we want to avoid partial changes to be applied in case the handler throws
         var tmpCopyStorage = storage
+        let lastHistoryResetId = tmpCopyStorage.lastHistoryResetId
         
         //---
         
@@ -514,14 +503,41 @@ extension StorageDispatcher
         
         do
         {
-            try handler(&tmpCopyStorage)
+            try handler(&tmpCopyStorage) // NOTE: another call to `access` can be made inside
+            
+            //---
+            
+            mutationsToReport = tmpCopyStorage.resetHistory()
+            
+            //---
+            
+            switch lastHistoryResetId == storage.lastHistoryResetId // still the same snapshot?
+            {
+                // no concurrent mutations have been done:
+                case true where !mutationsToReport.isEmpty: // and we have mutations to save
+                    
+                    // apply changes to permanent storage
+                    storage = tmpCopyStorage // NOTE: the history has already been cleared
+                    
+                // seems like another concurrent mutating access has been done:
+                case false where !mutationsToReport.isEmpty: // and we have mutations here
+                    
+                    // the API has been misused - mutations here and in a nested transaction?
+                    throw AccessError.concurrentMutatingAccessDetected
+                    
+                default:
+                    // if concurrent mutations have been applied, but we don't have mutations
+                    // here - it's totally fine to ignore, we jsut do nothing - no error, but also
+                    // IMPORTANT to NOTE: we do NOT apply the temporary copy back to the storage!
+                    break
+            }
         }
         catch
         {
             _accessLog.send(
                 .init(
                     outcome: .rejected(
-                        reason: error
+                        reason: error /// NOTE: error from `handler` or `AccessError`
                         ),
                     storage: storage,
                     env: .init(
@@ -536,13 +552,6 @@ extension StorageDispatcher
             
             throw error
         }
-        
-        //---
-        
-        mutationsToReport = tmpCopyStorage.resetHistory()
-        
-        // if handler didn't throw - we apply changes to permanent storage
-        storage = tmpCopyStorage // NOTE: the history has already been cleared
         
         //---
         
