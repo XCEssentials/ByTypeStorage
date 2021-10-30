@@ -24,12 +24,16 @@
  
  */
 
+import Foundation
+
+//---
+
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     var key: SomeKey.Type
     {
-        switch self
+        switch self.outcome
         {
             case .initialization(let key, _),
                     .actualization(let key, _, _),
@@ -44,10 +48,13 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - Initialization helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     struct InitializationOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
         
@@ -57,11 +64,12 @@ extension ByTypeStorage.MutationAttemptOutcome
     
     var asInitialization: InitializationOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .initialization(key, newValue):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key,
                     newValue: newValue
                 )
@@ -80,11 +88,14 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - Setting helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     /// Operation that results with given key being present in the storage.
     struct SettingOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
         
@@ -95,13 +106,14 @@ extension ByTypeStorage.MutationAttemptOutcome
     /// Operation that results with given key being present in the storage.
     var asSetting: SettingOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .initialization(key, newValue),
                     let .actualization(key, _, newValue),
                     let .transition(key, _, newValue):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key,
                     newValue: newValue
                 )
@@ -121,11 +133,14 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - Update helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     /// Operation that has both old and new values.
     struct UpdateOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
         
@@ -139,11 +154,12 @@ extension ByTypeStorage.MutationAttemptOutcome
     /// Operation that has both old and new values.
     var asUpdate: UpdateOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .actualization(key, oldValue, newValue), let .transition(key, oldValue, newValue):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key,
                     oldValue: oldValue,
                     newValue: newValue
@@ -164,10 +180,13 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - Actualization helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     struct ActualizationOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
         
@@ -180,11 +199,12 @@ extension ByTypeStorage.MutationAttemptOutcome
     
     var asActualization: ActualizationOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .actualization(key, oldValue, newValue):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key,
                     oldValue: oldValue,
                     newValue: newValue
@@ -204,10 +224,13 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - Transition helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     struct TransitionOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
         
@@ -220,11 +243,12 @@ extension ByTypeStorage.MutationAttemptOutcome
     
     var asTransition: TransitionOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .transition(key, oldValue, newValue):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key,
                     oldValue: oldValue,
                     newValue: newValue
@@ -244,10 +268,13 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - Deinitialization helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     struct DeinitializationOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
         
@@ -257,11 +284,12 @@ extension ByTypeStorage.MutationAttemptOutcome
     
     var asDeinitialization: DeinitializationOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .deinitialization(key, oldValue):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key,
                     oldValue: oldValue
                 )
@@ -280,21 +308,25 @@ extension ByTypeStorage.MutationAttemptOutcome
 // MARK: - BlankRemoval helpers
 
 public
-extension ByTypeStorage.MutationAttemptOutcome
+extension ByTypeStorage.MutationAttemptReport
 {
     struct BlankRemovalOutcome
     {
+        public
+        let timestamp: Date
+    
         public
         let key: SomeKey.Type
     }
     
     var asBlankRemovalOutcome: BlankRemovalOutcome?
     {
-        switch self
+        switch self.outcome
         {
             case let .nothingToRemove(key):
                 
                 return .init(
+                    timestamp: self.timestamp,
                     key: key
                 )
                 

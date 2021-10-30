@@ -153,16 +153,15 @@ extension StorageDispatcher
         
         @MainActor
         public
-        struct DescriptionProxy
+        struct WhenContext
         {
             public
             let description: String
             
-            @MainActor
             public
             func when<P: Publisher>(
                 _ when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> P
-            ) -> WhenProxy<P.Output, P.Failure> {
+            ) -> GivenOrThenContext<P.Output, P.Failure> {
                 
                 .init(
                     description: description,
@@ -170,24 +169,10 @@ extension StorageDispatcher
                 )
             }
             
-            @MainActor
-            public
-            func when<M: SomeMutationDecriptor, T>(
-                _: M.Type = M.self,
-                _ mapMaybe: @escaping (M) -> T?
-            ) -> WhenProxy<T, Never> {
-                
-                .init(
-                    description: description,
-                    when: { $0.onProcessed.mutation(M.self).compactMap(mapMaybe).eraseToAnyPublisher() }
-                )
-            }
-            
-            @MainActor
             public
             func when<M: SomeMutationDecriptor>(
                 _: M.Type = M.self
-            ) -> WhenProxy<M, Never> {
+            ) -> GivenOrThenContext<M, Never> {
                 
                 .init(
                     description: description,
@@ -198,13 +183,34 @@ extension StorageDispatcher
         
         @MainActor
         public
-        struct WhenProxy<T, E: Error>
+        struct GivenOrThenContext<T, E: Error>
         {
             public
             let description: String
             
             fileprivate
             let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>
+            
+            public
+            func given<Out>(
+                _ mapMaybe: @escaping (StorageDispatcher, T) -> Out?
+            ) -> ThenContext<Out, E> {
+                
+                .init(
+                    description: description,
+                    given: { dispatcher in
+                        
+                        when(dispatcher.accessLog)
+                            .map {
+                                (dispatcher, $0)
+                            }
+                            .compactMap(
+                                mapMaybe
+                            )
+                            .eraseToAnyPublisher()
+                    }
+                )
+            }
             
             public
             func then(
@@ -220,6 +226,65 @@ extension StorageDispatcher
                     body: { dispatcher in
                         
                         when(dispatcher.accessLog)
+                            .sink(
+                                receiveCompletion: { _ in },
+                                receiveValue: { output in then(dispatcher, output) }
+                            )
+                    }
+                )
+            }
+            
+            public
+            func then(
+                scope: String = #file,
+                location: Int = #line,
+                _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
+            ) -> AccessEventBinding {
+                
+                then(scope: scope, location: location) { dispatcher, _ in
+                    
+                    dispatcherOnlyHandler(dispatcher)
+                }
+            }
+            
+            public
+            func then(
+                scope: String = #file,
+                location: Int = #line,
+                _ outputOnlyHandler: @escaping (T) -> Void
+            ) -> AccessEventBinding {
+                
+                then(scope: scope, location: location) { _, output in
+                    
+                    outputOnlyHandler(output)
+                }
+            }
+        }
+        
+        @MainActor
+        public
+        struct ThenContext<T, E: Error>
+        {
+            public
+            let description: String
+            
+            fileprivate
+            let given: (StorageDispatcher) -> AnyPublisher<T, E>
+            
+            public
+            func then(
+                scope: String = #file,
+                location: Int = #line,
+                _ then: @escaping (StorageDispatcher, T) -> Void
+            ) -> AccessEventBinding {
+                
+                .init(
+                    description: description,
+                    scope: scope,
+                    location: location,
+                    body: { dispatcher in
+                        
+                        given(dispatcher)
                             .sink(
                                 receiveCompletion: { _ in },
                                 receiveValue: { output in then(dispatcher, output) }

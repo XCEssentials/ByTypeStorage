@@ -29,7 +29,7 @@ extension SomeKey
     static
     func scenario(
         _ description: String = ""
-    ) -> StorageDispatcher.AccessEventBinding.DescriptionProxy {
+    ) -> StorageDispatcher.AccessEventBinding.WhenContext {
         
         .init(description: description)
     }

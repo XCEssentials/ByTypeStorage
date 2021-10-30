@@ -61,7 +61,16 @@ extension ByTypeStorage
         )
     }
     
-    typealias History = [(timestamp: Date, outcome: MutationAttemptOutcome)]
+    struct MutationAttemptReport
+    {
+        public
+        let timestamp: Date = .init()
+    
+        public
+        let outcome: MutationAttemptOutcome
+    }
+    
+    typealias History = [MutationAttemptReport]
     
     enum InitializationError: Error
     {
@@ -537,7 +546,7 @@ extension ByTypeStorage
     ) {
         
         history.append(
-            (Date(), outcome)
+            .init(outcome: outcome)
         )
     }
     
