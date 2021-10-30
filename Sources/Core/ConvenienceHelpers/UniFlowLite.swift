@@ -28,6 +28,14 @@ public
 protocol SomeFeature: SomeSelfKey {}
 
 public
+extension SomeFeature
+{
+    typealias Itself = Self
+}
+
+//---
+
+public
 protocol SomeState: SomeStorableByKey {}
 
 //---
