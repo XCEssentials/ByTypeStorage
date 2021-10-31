@@ -24,7 +24,21 @@
  
  */
 
-// MARK: - GET data
+public
+extension ByTypeStorage
+{
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
+    {
+        try? fetch(valueOfType: V.self)
+    }
+    
+    func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
+    {
+        self[V.self] != nil
+    }
+}
+
+//---
 
 public
 extension SomeStorableByKey

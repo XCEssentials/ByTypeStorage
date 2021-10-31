@@ -114,24 +114,27 @@ extension ByTypeStorage
     }
 }
 
-// MARK: - GET data - SomeStorableByKey
+// MARK: - GET data
 
 public
 extension ByTypeStorage
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
+    func fetch(valueForKey keyType: SomeKey.Type) throws -> SomeStorable
     {
-        try? fetch(valueOfType: V.self)
+        if
+            let result = data[keyType.name]
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.keyNotFound(keyType)
+        }
     }
     
     func fetch<V: SomeStorableByKey>(valueOfType _: V.Type = V.self) throws -> V
     {
-        guard
-            let someResult = data[V.Key.name]
-        else
-        {
-            throw ReadDataError.keyNotFound(V.Key.self)
-        }
+        let someResult = try fetch(valueForKey: V.Key.self)
         
         //---
         
@@ -148,11 +151,6 @@ extension ByTypeStorage
                 actual: someResult
             )
         }
-    }
-    
-    func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
-    {
-        self[V.self] != nil
     }
 }
 
