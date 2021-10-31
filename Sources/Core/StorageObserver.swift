@@ -24,9 +24,12 @@
  
  */
 
-/// Marker type for type that can be used as key in the storage.
+import Combine
+
+//---
+
 public
-protocol SomeKey
+protocol StorageObserver
 {
     @MainActor
     static
@@ -34,14 +37,9 @@ protocol SomeKey
 }
 
 public
-extension SomeKey
+extension StorageObserver
 {
-    /// `ByTypeStorage` will use this as actual key.
-    static
-    var name: String
-    {
-        .init(reflecting: Self.self)
-    }
+    typealias Itself = Self
     
     @MainActor
     static
@@ -49,19 +47,13 @@ extension SomeKey
         _ description: String = ""
     ) -> StorageDispatcher.WhenContext {
         
-        .init(source: .keyType(self), description: description)
+        .init(source: .observerType(self), description: description)
     }
-}
-
-//---
-
-public
-protocol NoBindings {}
-
-public
-extension NoBindings
-{
+    
     @MainActor
     static
-    var bindings: [SomeAccessEventBinding] { [] }
+    func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
+    {
+        bindings.map{ $0.construct(with: dispatcher) }
+    }
 }
