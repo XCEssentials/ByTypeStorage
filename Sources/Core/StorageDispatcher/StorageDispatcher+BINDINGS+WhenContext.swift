@@ -24,39 +24,44 @@
  
  */
 
-public
-struct AccessRequest
-{
-    public
-    typealias Body = StorageDispatcher.AccessHandler
-    
-    //---
-    
-    public
-    let scope: String
-    
-    public
-    let context: String
-    
-    public
-    let location: Int
-    
-    public
-    let body: Body
-    
-    //---
-    
-    public
-    init(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        handler: @escaping Body
-    ) {
+import Combine
 
-        self.scope = scope
-        self.context = context
-        self.location = location
-        self.body = handler
+//---
+
+public
+extension StorageDispatcher
+{
+    @MainActor
+    struct WhenContext
+    {
+        public
+        let source: AccessEventBindingSource
+        
+        public
+        let description: String
+        
+        public
+        func when<P: Publisher>(
+            _ when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> P
+        ) -> GivenOrThenContext<P> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: { when($0) }
+            )
+        }
+        
+        public
+        func when<M: SomeMutationDecriptor>(
+            _: M.Type = M.self
+        ) -> GivenOrThenContext<AnyPublisher<M, Never>> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
+            )
+        }
     }
 }

@@ -24,7 +24,6 @@
  
  */
 
-import Foundation
 import Combine
 
 //---
@@ -41,18 +40,24 @@ class StorageDispatcher
     var bindings: [String: [AnyCancellable]] = [:]
     
     private
-    let _accessLog = PassthroughSubject<AccessEventReport, Never>()
-    
-    public
-    lazy
-    var accessLog: AnyPublisher<AccessEventReport, Never> = _accessLog.eraseToAnyPublisher()
+    let _accessLog = PassthroughSubject<AccessReport, Never>()
     
     private
     let _bindingsProcessingLog = PassthroughSubject<AccessEventBindingProcessingReport, Never>()
     
+    //---
+    
     public
-    lazy
-    var bindingsProcessingLog: AnyPublisher<AccessEventBindingProcessingReport, Never> = _bindingsProcessingLog.eraseToAnyPublisher()
+    var accessLog: AnyPublisher<AccessReport, Never>
+    {
+        _accessLog.eraseToAnyPublisher()
+    }
+    
+    public
+    var bindingsProcessingLog: AnyPublisher<AccessEventBindingProcessingReport, Never>
+    {
+        _bindingsProcessingLog.eraseToAnyPublisher()
+    }
     
     //---
     
@@ -70,81 +75,6 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    typealias AccessHandler = (inout ByTypeStorage) throws -> Void
-    
-    enum AccessError: Error
-    {
-        case concurrentMutatingAccessDetected
-    }
-    
-    struct EnvironmentInfo
-    {
-        public
-        let timestamp = Date()
-        
-        public
-        let scope: String
-        
-        public
-        let context: String
-        
-        public
-        let location: Int
-    }
-    
-    struct AccessEventReport
-    {
-        public
-        let outcome: AccessRequestOutcome
-        
-        public
-        let storage: ByTypeStorage
-        
-        public
-        let env: EnvironmentInfo
-    }
-    
-    struct ProcessedAccessEventReport
-    {
-        public
-        let mutations: ByTypeStorage.History
-        
-        public
-        let storage: ByTypeStorage
-        
-        public
-        let env: EnvironmentInfo
-    }
-    
-    struct RejectedAccessEventReport
-    {
-        public
-        let reason: Error
-        
-        public
-        let storage: ByTypeStorage
-        
-        public
-        let env: EnvironmentInfo
-    }
-    
-    enum AccessRequestOutcome
-    {
-        /// Mutation has been succesfully processed and already applied to the `storage`.
-        ///
-        /// Includes most recent snapshot of the `storage` and list of recent changes.
-        case processed(
-            mutations: ByTypeStorage.History
-        )
-        
-        /// Mutation has been rejected due to an error thrown from mutation handler.
-        ///
-        /// NO changes have been applied to the `storage`.
-        case rejected(
-            reason: Error
-        )
-    }
-    
     struct AccessEventBinding<W: Publisher, G>: SomeAccessEventBinding
     {
         public
@@ -160,7 +90,7 @@ extension StorageDispatcher
         let location: Int
         
         //internal
-        let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> W
+        let when: (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> W
         
         //internal
         let given: (StorageDispatcher, W.Output) throws -> G?
@@ -266,194 +196,6 @@ extension StorageDispatcher
         }
     }
     
-    //---
-    
-    @MainActor
-    struct WhenContext
-    {
-        public
-        let source: AccessEventBindingSource
-        
-        public
-        let description: String
-        
-        public
-        func when<P: Publisher>(
-            _ when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> P
-        ) -> GivenOrThenContext<P> {
-            
-            .init(
-                source: source,
-                description: description,
-                when: { when($0) }
-            )
-        }
-        
-        public
-        func when<M: SomeMutationDecriptor>(
-            _: M.Type = M.self
-        ) -> GivenOrThenContext<AnyPublisher<M, Never>> {
-            
-            .init(
-                source: source,
-                description: description,
-                when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
-            )
-        }
-    }
-    
-    @MainActor
-    struct GivenOrThenContext<W: Publisher>
-    {
-        public
-        let source: AccessEventBindingSource
-        
-        public
-        let description: String
-        
-        fileprivate
-        let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> W
-        
-        public
-        func given<G>(
-            _ given: @escaping (StorageDispatcher, W.Output) throws -> G?
-        ) -> ThenContext<W, G> {
-            
-            .init(
-                source: source,
-                description: description,
-                when: when,
-                given: given
-            )
-        }
-        
-        public
-        func given<G>(
-            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> G?
-        ) -> ThenContext<W, G> {
-            
-            given { dispatcher, _ in
-                
-                dispatcherOnlyHandler(dispatcher)
-            }
-        }
-        
-        public
-        func given<G>(
-            _ outputOnlyHandler: @escaping (W.Output) -> G?
-        ) -> ThenContext<W, G> {
-            
-            given { _, output in
-                
-                outputOnlyHandler(output)
-            }
-        }
-        
-        public
-        func then(
-            scope: String = #file,
-            location: Int = #line,
-            _ then: @escaping (StorageDispatcher, W.Output) -> Void
-        ) -> AccessEventBinding<W, W.Output> {
-            
-            .init(
-                source: source,
-                description: description,
-                scope: scope,
-                location: location,
-                when: when,
-                given: { $1 },
-                then: then
-            )
-        }
-        
-        public
-        func then(
-            scope: String = #file,
-            location: Int = #line,
-            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
-        ) -> AccessEventBinding<W, W.Output> {
-            
-            then(scope: scope, location: location) { dispatcher, _ in
-                
-                dispatcherOnlyHandler(dispatcher)
-            }
-        }
-        
-        public
-        func then(
-            scope: String = #file,
-            location: Int = #line,
-            _ outputOnlyHandler: @escaping (W.Output) -> Void
-        ) -> AccessEventBinding<W, W.Output> {
-            
-            then(scope: scope, location: location) { _, output in
-                
-                outputOnlyHandler(output)
-            }
-        }
-    }
-
-    @MainActor
-    struct ThenContext<W: Publisher, G>
-    {
-        public
-        let source: AccessEventBindingSource
-        
-        public
-        let description: String
-        
-        fileprivate
-        let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> W
-        
-        fileprivate
-        let given: (StorageDispatcher, W.Output) throws -> G?
-        
-        public
-        func then(
-            scope: String = #file,
-            location: Int = #line,
-            _ then: @escaping (StorageDispatcher, G) -> Void
-        ) -> AccessEventBinding<W, G> {
-            
-            .init(
-                source: source,
-                description: description,
-                scope: scope,
-                location: location,
-                when: when,
-                given: given,
-                then: then
-            )
-        }
-        
-        public
-        func then(
-            scope: String = #file,
-            location: Int = #line,
-            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
-        ) -> AccessEventBinding<W, G> {
-            
-            then(scope: scope, location: location) { dispatcher, _ in
-                
-                dispatcherOnlyHandler(dispatcher)
-            }
-        }
-        
-        public
-        func then(
-            scope: String = #file,
-            location: Int = #line,
-            _ outputOnlyHandler: @escaping (G) -> Void
-        ) -> AccessEventBinding<W, G> {
-            
-            then(scope: scope, location: location) { _, output in
-                
-                outputOnlyHandler(output)
-            }
-        }
-    }
-    
     enum AccessEventBindingProcessingReport
     {
         case activated(SomeAccessEventBinding)
@@ -471,141 +213,18 @@ extension StorageDispatcher
     }
 }
 
-// MARK: - GET data - SomeKey
+// MARK: - Access data
 
 public
 extension StorageDispatcher
 {
-    func fetch(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        valueForKey keyType: SomeKey.Type
-    ) throws -> SomeStorable {
-        
-        var result: SomeStorable!
-        
-        //---
-        
-        try access(scope: scope, context: context, location: location) {
-            
-            result = try $0.fetch(valueForKey: keyType)
-        }
-        
-        //---
-        
-        return result
-    }
+    typealias AccessHandler = (inout ByTypeStorage) throws -> Void
     
-    func hasValue(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        withKey keyType: SomeKey.Type
-    ) -> Bool {
-        
-        do
-        {
-            _ = try fetch(
-                scope: scope,
-                context: context,
-                location: location,
-                valueForKey: keyType
-            )
-            
-            return true
-        }
-        catch
-        {
-            return false
-        }
+    enum AccessError: Error
+    {
+        case concurrentMutatingAccessDetected
     }
-}
 
-// MARK: - GET data - SomeStorableByKey
-
-public
-extension StorageDispatcher
-{
-    func fetch<V: SomeStorableByKey>(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        valueOfType _: V.Type = V.self
-    ) throws -> V {
-        
-        var result: V!
-        
-        //---
-        
-        try access(scope: scope, context: context, location: location) {
-            
-            result = try $0.fetch(valueOfType: V.self)
-        }
-        
-        //---
-        
-        return result
-    }
-    
-    //---
-    
-    func hasValue<V: SomeStorableByKey>(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        ofType _: V.Type
-    ) -> Bool {
-        
-        do
-        {
-            _ = try fetch(
-                scope: scope,
-                context: context,
-                location: location,
-                valueOfType: V.self
-            )
-            
-            return true
-        }
-        catch
-        {
-            return false
-        }
-    }
-}
-
-// MARK: - SET data
-
-public
-extension StorageDispatcher
-{
-    @discardableResult
-    func process(
-        _ request: AccessRequest
-    ) throws -> ByTypeStorage.History {
-
-        try process([request])
-    }
-    
-    @discardableResult
-    func process(
-        _ requests: [AccessRequest]
-    ) throws -> ByTypeStorage.History {
-
-        // NOTE: do not throw errors here, subscribe for updates on dispatcher to observe outcomes
-        try requests
-            .flatMap {
-                
-                try access(
-                    scope: $0.scope,
-                    context: $0.context,
-                    location: $0.location,
-                    $0.body
-                )
-            }
-    }
-    
     /// Transaction-like isolation for mutations on the storage.
     @discardableResult
     func access(
