@@ -63,55 +63,6 @@ extension ByTypeStorage
             actual: SomeStorable
         )
     }
-    
-    enum InitializationError: Error
-    {
-        case keyFoundWithSameValueType(
-            key: SomeKey.Type,
-            sameTypeValue: SomeStorable
-        )
-        
-        case keyFoundWithAnotherValueType(
-            key: SomeKey.Type,
-            anotherTypeValue: SomeStorable
-        )
-    }
-    
-    enum ActualizationError: Error
-    {
-        case keyNotFound(
-            SomeKey.Type
-        )
-        
-        case keyFoundWithAnotherValueType(
-            key: SomeKey.Type,
-            anotherTypeValue: SomeStorable
-        )
-    }
-    
-    enum TransitionError: Error
-    {
-        case keyNotFound(
-            SomeKey.Type
-        )
-        
-        case keyFoundWithSameValueType(
-            key: SomeKey.Type,
-            sameTypeValue: SomeStorable
-        )
-        
-        case unexpectedExistingValue(
-            key: SomeKey.Type,
-            existingValue: SomeStorable
-        )
-    }
-    
-    enum DeinitializationError: Error
-    {
-        case keyNotFound(
-            SomeKey.Type
-        )
-    }
 }
 
 // MARK: - GET data
@@ -154,218 +105,6 @@ extension ByTypeStorage
     }
 }
 
-// MARK: - SET data - SEMANTIC helpers
-
-public
-extension ByTypeStorage
-{
-    mutating
-    func initialize<V: SomeStorableByKey>(with newValue: V) throws
-    {
-        switch data[V.Key.name]
-        {
-            case .none:
-                
-                data[V.Key.name] = newValue
-                
-                //---
-                
-                logHistoryEvent(
-                    outcome: .initialization(
-                        key: V.Key.self,
-                        newValue: newValue
-                    )
-                )
-                
-            //---
-                    
-            case .some(let existingValue) where type(of: existingValue) == type(of: newValue):
-                
-                throw InitializationError.keyFoundWithSameValueType(
-                    key: V.Key.self,
-                    sameTypeValue: existingValue
-                )
-                
-            //---
-                
-            case .some(let someExistingValue):
-                
-                throw InitializationError.keyFoundWithAnotherValueType(
-                    key: V.Key.self,
-                    anotherTypeValue: someExistingValue
-                )
-        }
-    }
-    
-    mutating
-    func actualize<V: SomeStorableByKey>(
-        _ valueOfType: V.Type = V.self,
-        via mutationHandler: (inout V) throws -> Void
-    ) throws {
-        
-        var state: V = try fetch()
-        
-        //---
-        
-        try mutationHandler(&state)
-        
-        //---
-        
-        try actualize(with: state)
-    }
-    
-    mutating
-    func actualize<V: SomeStorableByKey>(with newValue: V) throws
-    {
-        switch data[V.Key.name]
-        {
-            case .some(let oldValue) where type(of: oldValue) == type(of: newValue):
-                
-                data[V.Key.name] = newValue
-                
-                logHistoryEvent(
-                    outcome: .actualization(
-                        key: V.Key.self,
-                        oldValue: oldValue,
-                        newValue: newValue
-                    )
-                )
-                
-            //---
-                
-            case .some(let someExistingValue): // type(of: someExistingValue) != type(of: newValue)
-                
-                throw ActualizationError.keyFoundWithAnotherValueType(
-                    key: V.Key.self,
-                    anotherTypeValue: someExistingValue
-                )
-                
-            //---
-             
-            case .none:
-                
-                throw ActualizationError.keyNotFound(
-                    V.Key.self
-                )
-        }
-    }
-    
-    mutating
-    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
-        from oldValueInstance: O,
-        into newValue: N
-    ) throws where O.Key == N.Key {
-        
-        try transition(from: O.self, into: newValue)
-    }
-    
-    mutating
-    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
-        from oldValueType: O.Type,
-        into newValue: N
-    ) throws where O.Key == N.Key {
-        
-        switch data[N.Key.name]
-        {
-            case .some(let oldValue) where oldValue is O:
-                
-                data[N.Key.name] = newValue
-                
-                logHistoryEvent(
-                    outcome: .transition(
-                        key: N.Key.self,
-                        oldValue: oldValue,
-                        newValue: newValue
-                    )
-                )
-                
-            //---
-                
-            case .some(let existingValue): //type(of: existingValue) != O
-                
-                throw TransitionError.unexpectedExistingValue(
-                    key: N.Key.self,
-                    existingValue: existingValue
-                )
-                
-            //---
-             
-            case .none:
-                
-                throw TransitionError.keyNotFound(
-                    N.Key.self
-                )
-        }
-    }
-    
-    mutating
-    func transition<V: SomeStorableByKey>(
-        overrideSame: Bool = false,
-        into newValue: V
-    ) throws {
-        
-        switch data[V.Key.name]
-        {
-            case .some(let oldValue) where (type(of: oldValue) != V.self) || overrideSame:
-                
-                data[V.Key.name] = newValue
-                
-                logHistoryEvent(
-                    outcome: .transition(
-                        key: V.Key.self,
-                        oldValue: oldValue,
-                        newValue: newValue
-                    )
-                )
-                
-            //---
-                
-            case .some(let existingValue): //type(of: existingValue) == type(of: newValue) && !overrideSame
-                
-                throw TransitionError.keyFoundWithSameValueType(
-                    key: V.Key.self,
-                    sameTypeValue: existingValue
-                )
-                
-            //---
-             
-            case .none:
-                
-                throw TransitionError.keyNotFound(
-                    V.Key.self
-                )
-        }
-    }
-    
-    mutating
-    func deinitialize<K: SomeKey>(_: K.Type) throws
-    {
-        switch data[K.name]
-        {
-            case .some(let oldValue):
-                
-                data.removeValue(forKey: K.name) // NOTE: this is SDK method on Dictionary!
-                
-                //---
-                
-                logHistoryEvent(
-                    outcome: .deinitialization(
-                        key: K.self,
-                        oldValue: oldValue
-                    )
-                )
-                
-            //---
-                    
-            case .none:
-                
-                throw DeinitializationError.keyNotFound(
-                    K.self
-                )
-        }
-    }
-}
-
 // MARK: - SET data
 
 public
@@ -373,29 +112,32 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func store<V: SomeStorableByKey>(_ value: V?) -> MutationAttemptOutcome
-    {
+    func store<V: SomeStorableByKey>(
+        _ value: V,
+        expectedMutation: ExpectedMutation = .auto
+    ) throws -> MutationAttemptOutcome {
+        
         let outcome: MutationAttemptOutcome
         
         //---
         
         switch (data[V.Key.name], value)
         {
-            case (.none, .some(let newValue)):
-                
-                data[V.Key.name] = newValue
-                
-                //---
+            case (.none, let newValue):
                 
                 outcome = .initialization(key: V.Key.self, newValue: newValue)
                 
-            //---
+                //---
                 
-            case (.some(let oldValue), .some(let newValue)):
+                try expectedMutation.validateProposedOutcome(outcome)
+                
+                //---
                 
                 data[V.Key.name] = newValue
                 
-                //---
+            //---
+                
+            case (.some(let oldValue), let newValue):
                 
                 if
                     type(of: oldValue) == type(of: newValue)
@@ -407,19 +149,13 @@ extension ByTypeStorage
                     outcome = .transition(key: V.Key.self, oldValue: oldValue, newValue: newValue)
                 }
                 
-            //---
-               
-            case (.some(let oldValue), .none):
+                //---
                 
-                data.removeValue(forKey: V.Key.name) // NOTE: this is SDK method on Dictionary!
+                try expectedMutation.validateProposedOutcome(outcome)
                 
                 //---
                 
-                outcome = .deinitialization(key: V.Key.self, oldValue: oldValue)
-                
-            case (.none, .none):
-                
-                outcome = .nothingToRemove(key: V.Key.self)
+                data[V.Key.name] = newValue
         }
         
         //---
@@ -441,8 +177,12 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func removeValue<K: SomeKey>(forKey keyType: K.Type) -> MutationAttemptOutcome
-    {
+    func removeValue<K: SomeKey>(
+        forKey keyType: K.Type,
+        strict: Bool
+    ) throws -> MutationAttemptOutcome {
+        
+        let implicitlyExpectedMutation: ExpectedMutation = .deinitialization(strict: strict)
         let outcome: MutationAttemptOutcome
         
         //---
@@ -451,15 +191,23 @@ extension ByTypeStorage
         {
             case .some(let oldValue):
                 
-                data.removeValue(forKey: K.name)
+                outcome = .deinitialization(key: K.self, oldValue: oldValue)
                 
                 //---
                 
-                outcome = .deinitialization(key: K.self, oldValue: oldValue)
+                try implicitlyExpectedMutation.validateProposedOutcome(outcome)
+                
+                //---
+                
+                data.removeValue(forKey: K.name)
                 
             case .none:
                 
                 outcome = .nothingToRemove(key: K.self)
+                
+                //---
+                
+                try implicitlyExpectedMutation.validateProposedOutcome(outcome)
         }
         
         //---

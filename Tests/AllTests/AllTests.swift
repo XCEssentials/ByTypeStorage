@@ -76,7 +76,7 @@ extension AllTests
     func test_storingValue()
     {
         let value = One(val: 5)
-        storage.store(value)
+        try! storage.store(value)
         
         XCTAssertEqual(
             storage[One.self]?.val,
