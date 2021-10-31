@@ -33,7 +33,7 @@ protocol StorageObserver
 {
     @MainActor
     static
-    var bindings: [StorageDispatcher.AccessEventBinding] { get }
+    var bindings: [SomeAccessEventBinding] { get }
 }
 
 public
@@ -45,7 +45,7 @@ extension StorageObserver
     static
     func scenario(
         _ description: String = ""
-    ) -> StorageDispatcher.AccessEventBinding.WhenContext {
+    ) -> StorageDispatcher.WhenContext {
         
         .init(source: .observerType(self), description: description)
     }
@@ -54,6 +54,6 @@ extension StorageObserver
     static
     func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
     {
-        bindings.map{ $0.body(dispatcher) }
+        bindings.map{ $0.construct(with: dispatcher) }
     }
 }

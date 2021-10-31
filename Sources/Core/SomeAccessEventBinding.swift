@@ -24,44 +24,23 @@
  
  */
 
-/// Marker type for type that can be used as key in the storage.
-public
-protocol SomeKey
-{
-    @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { get }
-}
-
-public
-extension SomeKey
-{
-    /// `ByTypeStorage` will use this as actual key.
-    static
-    var name: String
-    {
-        .init(reflecting: Self.self)
-    }
-    
-    @MainActor
-    static
-    func scenario(
-        _ description: String = ""
-    ) -> StorageDispatcher.WhenContext {
-        
-        .init(source: .keyType(self), description: description)
-    }
-}
+import Combine
 
 //---
 
 public
-protocol NoBindings {}
-
-public
-extension NoBindings
+protocol SomeAccessEventBinding
 {
+    var source: AccessEventBindingSource { get }
+    
+    var description: String { get }
+    
+    var scope: String { get }
+    
+    var location: Int { get }
+    
     @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { [] }
+    func construct(
+        with dispatcher: StorageDispatcher
+    ) -> AnyCancellable
 }
