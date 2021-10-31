@@ -38,6 +38,41 @@ protocol SomeMutationDecriptor
     )
 }
 
+// MARK: - AnyMutationOf
+
+public
+struct AnyMutationOf<K: SomeKey>: SomeMutationDecriptor
+{
+    public
+    let timestamp: Date
+
+    public
+    let oldValue: SomeStorable?
+    
+    public
+    let newValue: SomeStorable?
+    
+    public
+    init?(
+        from mutationReport: ByTypeStorage.MutationAttemptReport
+    ) {
+        
+        guard
+            let anyMutation = mutationReport.asAnyMutation,
+            anyMutation.key.name == K.name
+        else
+        {
+            return nil
+        }
+        
+        //---
+        
+        self.timestamp = mutationReport.timestamp
+        self.oldValue = anyMutation.oldValue
+        self.newValue = anyMutation.newValue
+    }
+}
+
 // MARK: - Initialization
 
 public
