@@ -25,9 +25,6 @@
  */
 
 public
-protocol NoBindings {}
-
-public
 extension NoBindings where Self: SomeKey
 {
     @MainActor
