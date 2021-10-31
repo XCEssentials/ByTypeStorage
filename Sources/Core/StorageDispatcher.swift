@@ -138,9 +138,11 @@ extension StorageDispatcher
         )
     }
     
-    @MainActor
     struct AccessEventBinding
     {
+        public
+        let source: Source
+        
         public
         let description: String
         
@@ -151,15 +153,24 @@ extension StorageDispatcher
         let location: Int
         
         //internal
-        @MainActor
-        let body: (StorageDispatcher) -> AnyCancellable
+        let body: (StorageDispatcher) -> AnyCancellable // AnyPublisher<Void, Never>
         
         //---
+        
+        public
+        enum Source
+        {
+            case keyType(SomeKey.Type)
+            case observerType(StorageObserver.Type)
+        }
         
         @MainActor
         public
         struct WhenContext
         {
+            public
+            let source: Source
+            
             public
             let description: String
             
@@ -169,6 +180,7 @@ extension StorageDispatcher
             ) -> GivenOrThenContext<P.Output, P.Failure> {
                 
                 .init(
+                    source: source,
                     description: description,
                     when: { when($0).eraseToAnyPublisher() }
                 )
@@ -180,6 +192,7 @@ extension StorageDispatcher
             ) -> GivenOrThenContext<M, Never> {
                 
                 .init(
+                    source: source,
                     description: description,
                     when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
                 )
@@ -190,6 +203,9 @@ extension StorageDispatcher
         public
         struct GivenOrThenContext<T, E: Error>
         {
+            public
+            let source: Source
+            
             public
             let description: String
             
@@ -202,16 +218,19 @@ extension StorageDispatcher
             ) -> ThenContext<Out, E> {
                 
                 .init(
+                    source: source,
                     description: description,
                     given: { dispatcher in
                         
                         when(dispatcher.accessLog)
-                            .map {
-                                (dispatcher, $0)
+                            .compactMap { [weak dispatcher] in
+                                
+                                guard let dispatcher = dispatcher else { return nil }
+                                
+                                //---
+                                
+                                return mapMaybe(dispatcher, $0)
                             }
-                            .compactMap(
-                                mapMaybe
-                            )
                             .eraseToAnyPublisher()
                     }
                 )
@@ -247,6 +266,7 @@ extension StorageDispatcher
             ) -> AccessEventBinding {
                 
                 .init(
+                    source: source,
                     description: description,
                     scope: scope,
                     location: location,
@@ -288,10 +308,12 @@ extension StorageDispatcher
             }
         }
         
-        @MainActor
         public
         struct ThenContext<T, E: Error>
         {
+            public
+            let source: Source
+            
             public
             let description: String
             
@@ -306,6 +328,7 @@ extension StorageDispatcher
             ) -> AccessEventBinding {
                 
                 .init(
+                    source: source,
                     description: description,
                     scope: scope,
                     location: location,

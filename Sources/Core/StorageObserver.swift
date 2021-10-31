@@ -47,7 +47,7 @@ extension StorageObserver
         _ description: String = ""
     ) -> StorageDispatcher.AccessEventBinding.WhenContext {
         
-        .init(description: description)
+        .init(source: .observerType(self), description: description)
     }
     
     @MainActor
