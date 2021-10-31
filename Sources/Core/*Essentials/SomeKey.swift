@@ -44,13 +44,4 @@ extension SomeKey
     {
         .init(reflecting: Self.self)
     }
-    
-    @MainActor
-    static
-    func scenario(
-        _ description: String = ""
-    ) -> StorageDispatcher.WhenContext {
-        
-        .init(source: .keyType(self), description: description)
-    }
 }

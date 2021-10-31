@@ -29,13 +29,13 @@ import Combine
 //---
 
 public
-extension StorageDispatcher
+extension BDD
 {
     @MainActor
-    struct ThenContext<W: Publisher, G>
+    struct GivenOrThenContext<W: Publisher>
     {
         public
-        let source: AccessEventBindingSource
+        let source: StorageDispatcher.AccessReportBindingSource
         
         public
         let description: String
@@ -43,15 +43,47 @@ extension StorageDispatcher
         //internal
         let when: (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> W
         
-        //internal
-        let given: (StorageDispatcher, W.Output) throws -> G?
+        public
+        func given<G>(
+            _ given: @escaping (StorageDispatcher, W.Output) throws -> G?
+        ) -> ThenContext<W, G> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: when,
+                given: given
+            )
+        }
+        
+        public
+        func given<G>(
+            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> G?
+        ) -> ThenContext<W, G> {
+            
+            given { dispatcher, _ in
+                
+                dispatcherOnlyHandler(dispatcher)
+            }
+        }
+        
+        public
+        func given<G>(
+            _ outputOnlyHandler: @escaping (W.Output) -> G?
+        ) -> ThenContext<W, G> {
+            
+            given { _, output in
+                
+                outputOnlyHandler(output)
+            }
+        }
         
         public
         func then(
             scope: String = #file,
             location: Int = #line,
-            _ then: @escaping (StorageDispatcher, G) -> Void
-        ) -> AccessEventBinding<W, G> {
+            _ then: @escaping (StorageDispatcher, W.Output) -> Void
+        ) -> AccessReportBinding<W, W.Output> {
             
             .init(
                 source: source,
@@ -59,7 +91,7 @@ extension StorageDispatcher
                 scope: scope,
                 location: location,
                 when: when,
-                given: given,
+                given: { $1 },
                 then: then
             )
         }
@@ -69,7 +101,7 @@ extension StorageDispatcher
             scope: String = #file,
             location: Int = #line,
             _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
-        ) -> AccessEventBinding<W, G> {
+        ) -> AccessReportBinding<W, W.Output> {
             
             then(scope: scope, location: location) { dispatcher, _ in
                 
@@ -81,8 +113,8 @@ extension StorageDispatcher
         func then(
             scope: String = #file,
             location: Int = #line,
-            _ outputOnlyHandler: @escaping (G) -> Void
-        ) -> AccessEventBinding<W, G> {
+            _ outputOnlyHandler: @escaping (W.Output) -> Void
+        ) -> AccessReportBinding<W, W.Output> {
             
             then(scope: scope, location: location) { _, output in
                 

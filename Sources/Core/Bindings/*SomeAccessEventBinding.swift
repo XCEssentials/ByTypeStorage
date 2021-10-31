@@ -24,9 +24,23 @@
  
  */
 
+import Combine
+
+//---
+
 public
-enum AccessEventBindingSource
+protocol SomeAccessEventBinding
 {
-    case keyType(SomeKey.Type)
-    case observerType(StorageObserver.Type)
+    var source: StorageDispatcher.AccessReportBindingSource { get }
+    
+    var description: String { get }
+    
+    var scope: String { get }
+    
+    var location: Int { get }
+    
+    @MainActor
+    func construct(
+        with dispatcher: StorageDispatcher
+    ) -> AnyCancellable
 }

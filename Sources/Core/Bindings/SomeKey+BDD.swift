@@ -24,27 +24,15 @@
  
  */
 
-import Combine
-
-//---
-
 public
-protocol StorageObserver: AnyObject
+extension SomeKey
 {
     @MainActor
     static
-    var bindings: [SomeAccessEventBinding] { get }
-}
-
-public
-extension StorageObserver
-{
-    typealias Itself = Self
-    
-    @MainActor
-    static
-    func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
-    {
-        bindings.map{ $0.construct(with: dispatcher) }
+    func scenario(
+        _ description: String = ""
+    ) -> BDD.WhenContext {
+        
+        .init(source: .keyType(self), description: description)
     }
 }

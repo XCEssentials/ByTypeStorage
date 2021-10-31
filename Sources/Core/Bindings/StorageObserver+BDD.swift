@@ -24,23 +24,15 @@
  
  */
 
-import Combine
-
-//---
-
 public
-protocol SomeAccessEventBinding
+extension StorageObserver
 {
-    var source: AccessEventBindingSource { get }
-    
-    var description: String { get }
-    
-    var scope: String { get }
-    
-    var location: Int { get }
-    
     @MainActor
-    func construct(
-        with dispatcher: StorageDispatcher
-    ) -> AnyCancellable
+    static
+    func scenario(
+        _ description: String = ""
+    ) -> BDD.WhenContext {
+        
+        .init(source: .observerType(self), description: description)
+    }
 }

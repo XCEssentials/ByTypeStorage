@@ -43,7 +43,7 @@ class StorageDispatcher
     let _accessLog = PassthroughSubject<AccessReport, Never>()
     
     private
-    let _bindingsProcessingLog = PassthroughSubject<AccessEventBindingProcessingReport, Never>()
+    let _bindingsStatusLog = PassthroughSubject<AccessReportBindingStatus, Never>()
     
     //---
     
@@ -54,9 +54,9 @@ class StorageDispatcher
     }
     
     public
-    var bindingsProcessingLog: AnyPublisher<AccessEventBindingProcessingReport, Never>
+    var bindingsStatusLog: AnyPublisher<AccessReportBindingStatus, Never>
     {
-        _bindingsProcessingLog.eraseToAnyPublisher()
+        _bindingsStatusLog.eraseToAnyPublisher()
     }
     
     //---
@@ -75,10 +75,16 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    struct AccessEventBinding<W: Publisher, G>: SomeAccessEventBinding
+    enum AccessReportBindingSource
+    {
+        case keyType(SomeKey.Type)
+        case observerType(StorageObserver.Type)
+    }
+    
+    struct AccessReportBinding<W: Publisher, G>: SomeAccessEventBinding
     {
         public
-        let source: AccessEventBindingSource
+        let source: AccessReportBindingSource
         
         public
         let description: String
@@ -119,7 +125,7 @@ extension StorageDispatcher
                         //---
                         
                         dispatcher
-                            ._bindingsProcessingLog
+                            ._bindingsStatusLog
                             .send(
                                 .triggered(self)
                             )
@@ -141,7 +147,7 @@ extension StorageDispatcher
                         //---
                         
                         dispatcher
-                            ._bindingsProcessingLog
+                            ._bindingsStatusLog
                             .send(
                                 .activated(self)
                             )
@@ -153,7 +159,7 @@ extension StorageDispatcher
                         //---
                         
                         dispatcher
-                            ._bindingsProcessingLog
+                            ._bindingsStatusLog
                             .send(
                                 .cancelled(self)
                             )
@@ -171,7 +177,7 @@ extension StorageDispatcher
                             case .failure(let error):
                                 
                                 dispatcher
-                                    ._bindingsProcessingLog
+                                    ._bindingsStatusLog
                                     .send(
                                         .failed(self, error)
                                     )
@@ -187,7 +193,7 @@ extension StorageDispatcher
                         //---
                         
                         dispatcher
-                            ._bindingsProcessingLog
+                            ._bindingsStatusLog
                             .send(
                                 .executed(self)
                             )
@@ -196,7 +202,7 @@ extension StorageDispatcher
         }
     }
     
-    enum AccessEventBindingProcessingReport
+    enum AccessReportBindingStatus
     {
         case activated(SomeAccessEventBinding)
         

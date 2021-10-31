@@ -29,22 +29,39 @@ import Combine
 //---
 
 public
-protocol StorageObserver: AnyObject
+extension BDD
 {
     @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { get }
-}
-
-public
-extension StorageObserver
-{
-    typealias Itself = Self
-    
-    @MainActor
-    static
-    func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
+    struct WhenContext
     {
-        bindings.map{ $0.construct(with: dispatcher) }
+        public
+        let source: StorageDispatcher.AccessReportBindingSource
+        
+        public
+        let description: String
+        
+        public
+        func when<P: Publisher>(
+            _ when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> P
+        ) -> GivenOrThenContext<P> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: { when($0) }
+            )
+        }
+        
+        public
+        func when<M: SomeMutationDecriptor>(
+            _: M.Type = M.self
+        ) -> GivenOrThenContext<AnyPublisher<M, Never>> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
+            )
+        }
     }
 }
