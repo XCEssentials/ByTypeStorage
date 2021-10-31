@@ -150,8 +150,8 @@ extension StorageDispatcher
         public
         let location: Int
         
+        //internal
         @MainActor
-        fileprivate
         let body: (StorageDispatcher) -> AnyCancellable
         
         //---
