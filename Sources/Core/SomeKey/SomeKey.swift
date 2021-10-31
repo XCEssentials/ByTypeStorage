@@ -24,7 +24,7 @@
  
  */
 
-/// Marker type for type that can be used as key in the storage.
+/// Semantic marker for type that can be used as key in the storage.
 public
 protocol SomeKey
 {
@@ -32,6 +32,8 @@ protocol SomeKey
     static
     var bindings: [SomeAccessEventBinding] { get }
 }
+
+//---
 
 public
 extension SomeKey
@@ -51,17 +53,4 @@ extension SomeKey
         
         .init(source: .keyType(self), description: description)
     }
-}
-
-//---
-
-public
-protocol NoBindings {}
-
-public
-extension NoBindings
-{
-    @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { [] }
 }
