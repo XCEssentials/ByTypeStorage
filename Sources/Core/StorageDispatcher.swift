@@ -354,11 +354,11 @@ extension StorageDispatcher
 public
 extension StorageDispatcher
 {
-    func fetch<K: SomeKey>(
+    func fetch(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
-        valueForKey keyType: K.Type
+        valueForKey keyType: SomeKey.Type
     ) throws -> SomeStorable {
         
         var result: SomeStorable!
@@ -367,7 +367,7 @@ extension StorageDispatcher
         
         try access(scope: scope, context: context, location: location) {
             
-            result = try $0.fetch(valueForKey: K.self)
+            result = try $0.fetch(valueForKey: keyType)
         }
         
         //---
@@ -375,11 +375,11 @@ extension StorageDispatcher
         return result
     }
     
-    func hasValue<K: SomeKey>(
+    func hasValue(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
-        withKey _: K.Type
+        withKey keyType: SomeKey.Type
     ) -> Bool {
         
         do
@@ -388,7 +388,7 @@ extension StorageDispatcher
                 scope: scope,
                 context: context,
                 location: location,
-                valueForKey: K.self
+                valueForKey: keyType
             )
             
             return true

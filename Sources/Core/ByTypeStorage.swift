@@ -141,27 +141,27 @@ extension ByTypeStorage
 public
 extension ByTypeStorage
 {
-    subscript<K: SomeKey>(_ keyType: K.Type) -> SomeStorable?
+    subscript(_ keyType: SomeKey.Type) -> SomeStorable?
     {
-        try? fetch(valueForKey: K.self)
+        try? fetch(valueForKey: keyType)
     }
     
-    func fetch<K: SomeKey>(valueForKey _: K.Type) throws -> SomeStorable
+    func fetch(valueForKey keyType: SomeKey.Type) throws -> SomeStorable
     {
         if
-            let result = data[K.name]
+            let result = data[keyType.name]
         {
             return result
         }
         else
         {
-            throw ReadDataError.keyNotFound(K.self)
+            throw ReadDataError.keyNotFound(keyType)
         }
     }
     
-    func hasValue<K: SomeKey>(withKey keyType: K.Type) -> Bool
+    func hasValue(withKey keyType: SomeKey.Type) -> Bool
     {
-        self[K.self] != nil
+        self[keyType] != nil
     }
 }
 
