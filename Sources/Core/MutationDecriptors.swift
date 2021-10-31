@@ -34,7 +34,7 @@ protocol SomeMutationDecriptor
     var timestamp: Date { get }
     
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     )
 }
 
@@ -54,7 +54,7 @@ struct AnyMutationOf<K: SomeKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -86,7 +86,7 @@ struct InitializationInto<New: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -117,7 +117,7 @@ struct SettingInto<New: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -151,7 +151,7 @@ struct ActualizationOf<V: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -186,7 +186,7 @@ struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -219,7 +219,7 @@ struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMu
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -252,7 +252,7 @@ struct TransitionInto<New: SomeStorableByKey>: SomeMutationDecriptor
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard
@@ -284,7 +284,7 @@ struct DeinitializationFrom<Old: SomeStorableByKey>
     
     public
     init?(
-        from mutationReport: ByTypeStorage.MutationAttemptReport
+        from mutationReport: ByTypeStorage.HistoryElement
     ) {
         
         guard

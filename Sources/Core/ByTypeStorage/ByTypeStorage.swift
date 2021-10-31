@@ -64,17 +64,6 @@ extension ByTypeStorage
         )
     }
     
-    struct MutationAttemptReport
-    {
-        public
-        let timestamp: Date = .init()
-    
-        public
-        let outcome: MutationAttemptOutcome
-    }
-    
-    typealias History = [MutationAttemptReport]
-    
     enum InitializationError: Error
     {
         case keyFoundWithSameValueType(
@@ -122,17 +111,6 @@ extension ByTypeStorage
         case keyNotFound(
             SomeKey.Type
         )
-    }
-    
-    enum MutationAttemptOutcome
-    {
-        case initialization(key: SomeKey.Type, newValue: SomeStorable)
-        case actualization(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
-        case transition(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
-        case deinitialization(key: SomeKey.Type, oldValue: SomeStorable)
-        
-        /// No removal operation has been performed, because no such key has been found.
-        case nothingToRemove(key: SomeKey.Type)
     }
 }
 
