@@ -47,6 +47,13 @@ class StorageDispatcher
     lazy
     var accessLog: AnyPublisher<AccessEventReport, Never> = _accessLog.eraseToAnyPublisher()
     
+    private
+    let _bindingsProcessingLog = PassthroughSubject<AccessEventBindingProcessingReport, Never>()
+    
+    public
+    lazy
+    var bindingsProcessingLog: AnyPublisher<AccessEventBindingProcessingReport, Never> = _bindingsProcessingLog.eraseToAnyPublisher()
+    
     //---
     
     public
@@ -138,9 +145,11 @@ extension StorageDispatcher
         )
     }
     
-    @MainActor
-    struct AccessEventBinding
+    struct AccessEventBinding<W: Publisher, G>: SomeAccessEventBinding
     {
+        public
+        let source: AccessEventBindingSource
+        
         public
         let description: String
         
@@ -150,202 +159,315 @@ extension StorageDispatcher
         public
         let location: Int
         
+        //internal
+        let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> W
+        
+        //internal
+        let given: (StorageDispatcher, W.Output) throws -> G?
+        
+        //internal
+        let then: (StorageDispatcher, G) -> Void
+        
         @MainActor
+        public
+        func construct(with dispatcher: StorageDispatcher) -> AnyCancellable
+        {
+            when(dispatcher.accessLog)
+                .tryCompactMap { [weak dispatcher] in
+                    
+                    guard let dispatcher = dispatcher else { return nil }
+                    
+                    //---
+                    
+                    return try given(dispatcher, $0)
+                }
+                .handleEvents(
+                    receiveOutput: { [weak dispatcher] (_: G) in
+                        
+                        guard let dispatcher = dispatcher else { return }
+                        
+                        //---
+                        
+                        dispatcher
+                            ._bindingsProcessingLog
+                            .send(
+                                .triggered(self)
+                            )
+                    }
+                )
+                .compactMap { [weak dispatcher] in
+                    
+                    guard let dispatcher = dispatcher else { return nil }
+
+                    //---
+
+                    return then(dispatcher, $0) // map into `Void` to erase type info
+                }
+                .handleEvents(
+                    receiveSubscription: { [weak dispatcher] _ in
+                        
+                        guard let dispatcher = dispatcher else { return }
+                        
+                        //---
+                        
+                        dispatcher
+                            ._bindingsProcessingLog
+                            .send(
+                                .activated(self)
+                            )
+                    },
+                    receiveCancel: { [weak dispatcher] in
+                        
+                        guard let dispatcher = dispatcher else { return }
+                        
+                        //---
+                        
+                        dispatcher
+                            ._bindingsProcessingLog
+                            .send(
+                                .cancelled(self)
+                            )
+                    }
+                )
+                .sink(
+                    receiveCompletion: { [weak dispatcher] in
+                        
+                        guard let dispatcher = dispatcher else { return }
+                        
+                        //---
+                        
+                        switch $0
+                        {
+                            case .failure(let error):
+                                
+                                dispatcher
+                                    ._bindingsProcessingLog
+                                    .send(
+                                        .failed(self, error)
+                                    )
+                                
+                            default:
+                                break
+                        }
+                    },
+                    receiveValue: { [weak dispatcher] in
+                        
+                        guard let dispatcher = dispatcher else { return }
+                        
+                        //---
+                        
+                        dispatcher
+                            ._bindingsProcessingLog
+                            .send(
+                                .executed(self)
+                            )
+                    }
+                )
+        }
+    }
+    
+    //---
+    
+    @MainActor
+    struct WhenContext
+    {
+        public
+        let source: AccessEventBindingSource
+        
+        public
+        let description: String
+        
+        public
+        func when<P: Publisher>(
+            _ when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> P
+        ) -> GivenOrThenContext<P> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: { when($0) }
+            )
+        }
+        
+        public
+        func when<M: SomeMutationDecriptor>(
+            _: M.Type = M.self
+        ) -> GivenOrThenContext<AnyPublisher<M, Never>> {
+            
+            .init(
+                source: source,
+                description: description,
+                when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
+            )
+        }
+    }
+    
+    @MainActor
+    struct GivenOrThenContext<W: Publisher>
+    {
+        public
+        let source: AccessEventBindingSource
+        
+        public
+        let description: String
+        
         fileprivate
-        let body: (StorageDispatcher) -> AnyCancellable
+        let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> W
         
-        //---
-        
-        @MainActor
         public
-        struct WhenContext
-        {
-            public
-            let description: String
+        func given<G>(
+            _ given: @escaping (StorageDispatcher, W.Output) throws -> G?
+        ) -> ThenContext<W, G> {
             
-            public
-            func when<P: Publisher>(
-                _ when: @escaping (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> P
-            ) -> GivenOrThenContext<P.Output, P.Failure> {
-                
-                .init(
-                    description: description,
-                    when: { when($0).eraseToAnyPublisher() }
-                )
-            }
+            .init(
+                source: source,
+                description: description,
+                when: when,
+                given: given
+            )
+        }
+        
+        public
+        func given<G>(
+            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> G?
+        ) -> ThenContext<W, G> {
             
-            public
-            func when<M: SomeMutationDecriptor>(
-                _: M.Type = M.self
-            ) -> GivenOrThenContext<M, Never> {
+            given { dispatcher, _ in
                 
-                .init(
-                    description: description,
-                    when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
-                )
+                dispatcherOnlyHandler(dispatcher)
             }
         }
         
-        @MainActor
         public
-        struct GivenOrThenContext<T, E: Error>
-        {
-            public
-            let description: String
+        func given<G>(
+            _ outputOnlyHandler: @escaping (W.Output) -> G?
+        ) -> ThenContext<W, G> {
             
-            fileprivate
-            let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> AnyPublisher<T, E>
-            
-            public
-            func given<Out>(
-                _ mapMaybe: @escaping (StorageDispatcher, T) -> Out?
-            ) -> ThenContext<Out, E> {
+            given { _, output in
                 
-                .init(
-                    description: description,
-                    given: { dispatcher in
-                        
-                        when(dispatcher.accessLog)
-                            .map {
-                                (dispatcher, $0)
-                            }
-                            .compactMap(
-                                mapMaybe
-                            )
-                            .eraseToAnyPublisher()
-                    }
-                )
-            }
-            
-            public
-            func given<Out>(
-                _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Out?
-            ) -> ThenContext<Out, E> {
-                
-                given { dispatcher, _ in
-                    
-                    dispatcherOnlyHandler(dispatcher)
-                }
-            }
-            
-            public
-            func given<Out>(
-                _ outputOnlyHandler: @escaping (T) -> Out?
-            ) -> ThenContext<Out, E> {
-                
-                given { _, output in
-                    
-                    outputOnlyHandler(output)
-                }
-            }
-            
-            public
-            func then(
-                scope: String = #file,
-                location: Int = #line,
-                _ then: @escaping (StorageDispatcher, T) -> Void
-            ) -> AccessEventBinding {
-                
-                .init(
-                    description: description,
-                    scope: scope,
-                    location: location,
-                    body: { dispatcher in
-                        
-                        when(dispatcher.accessLog)
-                            .sink(
-                                receiveCompletion: { _ in },
-                                receiveValue: { output in then(dispatcher, output) }
-                            )
-                    }
-                )
-            }
-            
-            public
-            func then(
-                scope: String = #file,
-                location: Int = #line,
-                _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
-            ) -> AccessEventBinding {
-                
-                then(scope: scope, location: location) { dispatcher, _ in
-                    
-                    dispatcherOnlyHandler(dispatcher)
-                }
-            }
-            
-            public
-            func then(
-                scope: String = #file,
-                location: Int = #line,
-                _ outputOnlyHandler: @escaping (T) -> Void
-            ) -> AccessEventBinding {
-                
-                then(scope: scope, location: location) { _, output in
-                    
-                    outputOnlyHandler(output)
-                }
+                outputOnlyHandler(output)
             }
         }
         
-        @MainActor
         public
-        struct ThenContext<T, E: Error>
-        {
-            public
-            let description: String
+        func then(
+            scope: String = #file,
+            location: Int = #line,
+            _ then: @escaping (StorageDispatcher, W.Output) -> Void
+        ) -> AccessEventBinding<W, W.Output> {
             
-            fileprivate
-            let given: (StorageDispatcher) -> AnyPublisher<T, E>
+            .init(
+                source: source,
+                description: description,
+                scope: scope,
+                location: location,
+                when: when,
+                given: { $1 },
+                then: then
+            )
+        }
+        
+        public
+        func then(
+            scope: String = #file,
+            location: Int = #line,
+            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
+        ) -> AccessEventBinding<W, W.Output> {
             
-            public
-            func then(
-                scope: String = #file,
-                location: Int = #line,
-                _ then: @escaping (StorageDispatcher, T) -> Void
-            ) -> AccessEventBinding {
+            then(scope: scope, location: location) { dispatcher, _ in
                 
-                .init(
-                    description: description,
-                    scope: scope,
-                    location: location,
-                    body: { dispatcher in
-                        
-                        given(dispatcher)
-                            .sink(
-                                receiveCompletion: { _ in },
-                                receiveValue: { output in then(dispatcher, output) }
-                            )
-                    }
-                )
-            }
-            
-            public
-            func then(
-                scope: String = #file,
-                location: Int = #line,
-                _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
-            ) -> AccessEventBinding {
-                
-                then(scope: scope, location: location) { dispatcher, _ in
-                    
-                    dispatcherOnlyHandler(dispatcher)
-                }
-            }
-            
-            public
-            func then(
-                scope: String = #file,
-                location: Int = #line,
-                _ outputOnlyHandler: @escaping (T) -> Void
-            ) -> AccessEventBinding {
-                
-                then(scope: scope, location: location) { _, output in
-                    
-                    outputOnlyHandler(output)
-                }
+                dispatcherOnlyHandler(dispatcher)
             }
         }
+        
+        public
+        func then(
+            scope: String = #file,
+            location: Int = #line,
+            _ outputOnlyHandler: @escaping (W.Output) -> Void
+        ) -> AccessEventBinding<W, W.Output> {
+            
+            then(scope: scope, location: location) { _, output in
+                
+                outputOnlyHandler(output)
+            }
+        }
+    }
+
+    @MainActor
+    struct ThenContext<W: Publisher, G>
+    {
+        public
+        let source: AccessEventBindingSource
+        
+        public
+        let description: String
+        
+        fileprivate
+        let when: (AnyPublisher<StorageDispatcher.AccessEventReport, Never>) -> W
+        
+        fileprivate
+        let given: (StorageDispatcher, W.Output) throws -> G?
+        
+        public
+        func then(
+            scope: String = #file,
+            location: Int = #line,
+            _ then: @escaping (StorageDispatcher, G) -> Void
+        ) -> AccessEventBinding<W, G> {
+            
+            .init(
+                source: source,
+                description: description,
+                scope: scope,
+                location: location,
+                when: when,
+                given: given,
+                then: then
+            )
+        }
+        
+        public
+        func then(
+            scope: String = #file,
+            location: Int = #line,
+            _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> Void
+        ) -> AccessEventBinding<W, G> {
+            
+            then(scope: scope, location: location) { dispatcher, _ in
+                
+                dispatcherOnlyHandler(dispatcher)
+            }
+        }
+        
+        public
+        func then(
+            scope: String = #file,
+            location: Int = #line,
+            _ outputOnlyHandler: @escaping (G) -> Void
+        ) -> AccessEventBinding<W, G> {
+            
+            then(scope: scope, location: location) { _, output in
+                
+                outputOnlyHandler(output)
+            }
+        }
+    }
+    
+    enum AccessEventBindingProcessingReport
+    {
+        case activated(SomeAccessEventBinding)
+        
+        /// After passing through `when` (and `given`,
+        /// if present) claus(es), right before `then`.
+        case triggered(SomeAccessEventBinding)
+        
+        /// After executing `then` clause.
+        case executed(SomeAccessEventBinding)
+        
+        case failed(SomeAccessEventBinding, Error)
+        
+        case cancelled(SomeAccessEventBinding)
     }
 }
 
@@ -611,7 +733,7 @@ extension StorageDispatcher
             }
             .map {
                 
-                ( key: $0, bindings: $0.bindings.map { $0.body(self) } )
+                ( key: $0, bindings: $0.bindings.map { $0.construct(with: self) } )
             }
             .forEach {
                 
