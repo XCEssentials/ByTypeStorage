@@ -275,7 +275,14 @@ extension StorageDispatcher
                         when(dispatcher.accessLog)
                             .sink(
                                 receiveCompletion: { _ in },
-                                receiveValue: { output in then(dispatcher, output) }
+                                receiveValue: { [weak dispatcher] output in
+                                    
+                                    guard let dispatcher = dispatcher else { return }
+                                    
+                                    //---
+                                    
+                                    then(dispatcher, output)
+                                }
                             )
                     }
                 )
@@ -337,7 +344,14 @@ extension StorageDispatcher
                         given(dispatcher)
                             .sink(
                                 receiveCompletion: { _ in },
-                                receiveValue: { output in then(dispatcher, output) }
+                                receiveValue: { [weak dispatcher] output in
+                                    
+                                    guard let dispatcher = dispatcher else { return }
+                                    
+                                    //---
+                                    
+                                    then(dispatcher, output)
+                                }
                             )
                     }
                 )
