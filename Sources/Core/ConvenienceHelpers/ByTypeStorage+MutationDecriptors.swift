@@ -45,6 +45,69 @@ extension ByTypeStorage.MutationAttemptReport
     }
 }
 
+// MARK: - AnyMutation helpers
+
+public
+extension ByTypeStorage.MutationAttemptReport
+{
+    struct AnyMutationOutcome
+    {
+        public
+        let timestamp: Date
+    
+        public
+        let key: SomeKey.Type
+        
+        public
+        let oldValue: SomeStorable?
+        
+        public
+        let newValue: SomeStorable?
+    }
+    
+    var asAnyMutation: AnyMutationOutcome?
+    {
+        switch self.outcome
+        {
+            case let .initialization(key, newValue):
+                
+                return .init(
+                    timestamp: self.timestamp,
+                    key: key,
+                    oldValue: nil,
+                    newValue: newValue
+                )
+                
+            case let .actualization(key, oldValue, newValue),
+                let .transition(key, oldValue, newValue):
+                
+                return .init(
+                    timestamp: self.timestamp,
+                    key: key,
+                    oldValue: oldValue,
+                    newValue: newValue
+                )
+                
+            case let .deinitialization(key, oldValue):
+                
+                return .init(
+                    timestamp: self.timestamp,
+                    key: key,
+                    oldValue: oldValue,
+                    newValue: nil
+                )
+                
+            default:
+                return nil
+        }
+    }
+    
+    var isAnyMutation: Bool
+    {
+        asAnyMutation != nil
+    }
+}
+
 // MARK: - Initialization helpers
 
 public
