@@ -29,7 +29,7 @@ import Combine
 //---
 
 public
-protocol StorageObserver
+protocol StorageObserver: AnyObject
 {
     @MainActor
     static

@@ -24,7 +24,34 @@
  
  */
 
-// MARK: - GET data
+public
+extension ByTypeStorage
+{
+    subscript(_ keyType: SomeKey.Type) -> SomeStorable?
+    {
+        try? fetch(valueForKey: keyType)
+    }
+    
+    func fetch(valueForKey keyType: SomeKey.Type) throws -> SomeStorable
+    {
+        if
+            let result = data[keyType.name]
+        {
+            return result
+        }
+        else
+        {
+            throw ReadDataError.keyNotFound(keyType)
+        }
+    }
+    
+    func hasValue(withKey keyType: SomeKey.Type) -> Bool
+    {
+        self[keyType] != nil
+    }
+}
+
+//---
 
 public
 extension SomeKey
