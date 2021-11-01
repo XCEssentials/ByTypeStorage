@@ -24,22 +24,15 @@
  
  */
 
-// MARK: - GET data
-
 public
 extension SomeKey
 {
     @MainActor
     static
-    func fetch(from storage: StorageDispatcher) throws -> SomeStorable
-    {
-        try storage.fetch(valueForKey: self)
-    }
-    
-    @MainActor
-    static
-    func isPresent(in storage: StorageDispatcher) -> Bool
-    {
-        storage.hasValue(withKey: self)
+    func scenario(
+        _ description: String = ""
+    ) -> BDD.WhenContext<Self> {
+        
+        .init(description: description)
     }
 }

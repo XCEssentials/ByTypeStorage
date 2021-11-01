@@ -29,7 +29,35 @@ import Foundation
 //---
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage
+{
+    typealias History = [HistoryElement]
+    
+    struct HistoryElement
+    {
+        public
+        let timestamp: Date = .init()
+    
+        public
+        let outcome: MutationAttemptOutcome
+    }
+    
+    enum MutationAttemptOutcome
+    {
+        case initialization(key: SomeKey.Type, newValue: SomeStorable)
+        case actualization(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
+        case transition(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
+        case deinitialization(key: SomeKey.Type, oldValue: SomeStorable)
+        
+        /// No removal operation has been performed, because no such key has been found.
+        case nothingToRemove(key: SomeKey.Type)
+    }
+}
+
+//---
+
+public
+extension ByTypeStorage.HistoryElement
 {
     var key: SomeKey.Type
     {
@@ -48,7 +76,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - AnyMutation helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     struct AnyMutationOutcome
     {
@@ -111,7 +139,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - Initialization helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     struct InitializationOutcome
     {
@@ -151,7 +179,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - Setting helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     /// Operation that results with given key being present in the storage.
     struct SettingOutcome
@@ -196,7 +224,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - Update helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     /// Operation that has both old and new values.
     struct UpdateOutcome
@@ -243,7 +271,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - Actualization helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     struct ActualizationOutcome
     {
@@ -287,7 +315,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - Transition helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     struct TransitionOutcome
     {
@@ -331,7 +359,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - Deinitialization helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     struct DeinitializationOutcome
     {
@@ -371,7 +399,7 @@ extension ByTypeStorage.MutationAttemptReport
 // MARK: - BlankRemoval helpers
 
 public
-extension ByTypeStorage.MutationAttemptReport
+extension ByTypeStorage.HistoryElement
 {
     struct BlankRemovalOutcome
     {

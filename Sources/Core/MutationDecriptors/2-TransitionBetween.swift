@@ -24,23 +24,40 @@
  
  */
 
-import Combine
+import Foundation /// for access to `Date` type
 
 //---
 
 public
-protocol SomeAccessEventBinding
+struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMutationDecriptor
 {
-    var source: AccessEventBindingSource { get }
+    public
+    let timestamp: Date
+
+    public
+    let oldValue: Old
     
-    var description: String { get }
+    public
+    let newValue: New
     
-    var scope: String { get }
-    
-    var location: Int { get }
-    
-    @MainActor
-    func construct(
-        with dispatcher: StorageDispatcher
-    ) -> AnyCancellable
+    public
+    init?(
+        from mutationReport: ByTypeStorage.HistoryElement
+    ) {
+        
+        guard
+            let oldValue = mutationReport.asTransition?.oldValue as? Old,
+            let newValue = mutationReport.asTransition?.newValue as? New
+        else
+        {
+            return nil
+        }
+        
+        //---
+        
+        self.timestamp = mutationReport.timestamp
+        self.oldValue = oldValue
+        self.newValue = newValue
+    }
 }
+

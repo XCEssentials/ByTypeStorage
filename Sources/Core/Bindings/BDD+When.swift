@@ -24,44 +24,31 @@
  
  */
 
-/// Marker type for type that can be used as key in the storage.
-public
-protocol SomeKey
-{
-    @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { get }
-}
-
-public
-extension SomeKey
-{
-    /// `ByTypeStorage` will use this as actual key.
-    static
-    var name: String
-    {
-        .init(reflecting: Self.self)
-    }
-    
-    @MainActor
-    static
-    func scenario(
-        _ description: String = ""
-    ) -> StorageDispatcher.WhenContext {
-        
-        .init(source: .keyType(self), description: description)
-    }
-}
+import Combine
 
 //---
 
+@MainActor
 public
-protocol NoBindings {}
-
-public
-extension NoBindings
+extension BDD.WhenContext
 {
-    @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { [] }
+    func when<P: Publisher>(
+        _ when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> P
+    ) -> BDD.GivenOrThenContext<S, P> {
+        
+        .init(
+            description: description,
+            when: { when($0) }
+        )
+    }
+    
+    func when<M: SomeMutationDecriptor>(
+        _: M.Type = M.self
+    ) -> BDD.GivenOrThenContext<S, AnyPublisher<M, Never>> {
+        
+        .init(
+            description: description,
+            when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
+        )
+    }
 }

@@ -24,39 +24,39 @@
  
  */
 
+import Foundation /// for access to `Date` type
+
+//---
+
 public
-struct AccessRequest
+struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
 {
     public
-    typealias Body = StorageDispatcher.AccessHandler
-    
-    //---
-    
-    public
-    let scope: String
-    
-    public
-    let context: String
-    
-    public
-    let location: Int
-    
-    public
-    let body: Body
-    
-    //---
-    
-    public
-    init(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        handler: @escaping Body
-    ) {
+    let timestamp: Date
 
-        self.scope = scope
-        self.context = context
-        self.location = location
-        self.body = handler
+    public
+    let oldValue: Old
+    
+    public
+    let newValue: SomeStorable
+    
+    public
+    init?(
+        from mutationReport: ByTypeStorage.HistoryElement
+    ) {
+        
+        guard
+            let oldValue = mutationReport.asTransition?.oldValue as? Old,
+            let newValue = mutationReport.asTransition?.newValue
+        else
+        {
+            return nil
+        }
+        
+        //---
+        
+        self.timestamp = mutationReport.timestamp
+        self.oldValue = oldValue
+        self.newValue = newValue
     }
 }

@@ -24,24 +24,19 @@
  
  */
 
-// MARK: - GET data
-
 public
-extension SomeStorableByKey
+enum AccessReportBindingStatus
 {
-    @MainActor
-    static
-    func fetch(from storage: StorageDispatcher) throws -> Self
-    {
-        try storage.fetch(valueOfType: self)
-    }
-
-    //---
-
-    @MainActor
-    static
-    func isPresent(in storage: StorageDispatcher) -> Bool
-    {
-        storage.hasValue(ofType: self)
-    }
+    case activated(SomeAccessReportBinding)
+    
+    /// After passing through `when` (and `given`,
+    /// if present) claus(es), right before `then`.
+    case triggered(SomeAccessReportBinding)
+    
+    /// After executing `then` clause.
+    case executed(SomeAccessReportBinding)
+    
+    case failed(SomeAccessReportBinding, Error)
+    
+    case cancelled(SomeAccessReportBinding)
 }

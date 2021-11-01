@@ -1,9 +1,9 @@
 import Combine
 
-//---
+// MARK: - Access log - Processed vs. Rejected
 
 public
-extension Publisher where Output == StorageDispatcher.AccessEventReport, Failure == Never
+extension Publisher where Output == StorageDispatcher.AccessReport, Failure == Never
 {
     var onProcessed: AnyPublisher<StorageDispatcher.ProcessedAccessEventReport, Failure>
     {
@@ -15,6 +15,7 @@ extension Publisher where Output == StorageDispatcher.AccessEventReport, Failure
                     case .processed(let mutations):
                         
                         return .init(
+                            timestamp: $0.timestamp,
                             mutations: mutations,
                             storage: $0.storage,
                             env: $0.env
@@ -38,6 +39,7 @@ extension Publisher where Output == StorageDispatcher.AccessEventReport, Failure
                     case .rejected(let reason):
                         
                         return .init(
+                            timestamp: $0.timestamp,
                             reason: reason,
                             storage: $0.storage,
                             env: $0.env
@@ -52,12 +54,12 @@ extension Publisher where Output == StorageDispatcher.AccessEventReport, Failure
     }
 }
 
-//---
+// MARK: - Access log - Processed - get individual mutations
 
 public
 extension Publisher where Output == StorageDispatcher.ProcessedAccessEventReport, Failure == Never
 {
-    var mutation: AnyPublisher<ByTypeStorage.MutationAttemptReport, Failure>
+    var mutation: AnyPublisher<ByTypeStorage.HistoryElement, Failure>
     {
         self
             .flatMap(

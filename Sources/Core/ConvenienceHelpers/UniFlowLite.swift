@@ -182,12 +182,27 @@ extension SomeKey where Self: FeatureShell
         )
     }
     
+    @discardableResult
+    func store<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        _ value: V
+    ) throws -> ByTypeStorage.History where V.Key == Self {
+        
+        try storage.access(scope: scope, context: context, location: location) {
+            
+            try $0.store(value)
+        }
+    }
+    
+    @discardableResult
     func initialize<V: SomeStorableByKey>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
         with newValue: V
-    ) throws where V.Key == Self {
+    ) throws -> ByTypeStorage.History where V.Key == Self {
         
         try storage.access(scope: scope, context: context, location: location) {
             
@@ -195,13 +210,14 @@ extension SomeKey where Self: FeatureShell
         }
     }
     
+    @discardableResult
     func actualize<V: SomeStorableByKey>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
         _ valueOfType: V.Type = V.self,
         via mutationHandler: (inout V) throws -> Void
-    ) throws where V.Key == Self {
+    ) throws -> ByTypeStorage.History where V.Key == Self {
         
         try storage.access(scope: scope, context: context, location: location) {
            
@@ -209,12 +225,13 @@ extension SomeKey where Self: FeatureShell
         }
     }
     
+    @discardableResult
     func actualize<V: SomeStorableByKey>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
         with newValue: V
-    ) throws where V.Key == Self {
+    ) throws -> ByTypeStorage.History where V.Key == Self {
         
         try storage.access(scope: scope, context: context, location: location) {
            
@@ -222,30 +239,29 @@ extension SomeKey where Self: FeatureShell
         }
     }
     
+    @discardableResult
     func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
         from oldValueInstance: O,
         into newValue: N
-    ) throws where O.Key == Self, N.Key == Self {
+    ) throws -> ByTypeStorage.History where O.Key == Self, N.Key == Self {
         
-        try transition(
-            scope: scope,
-            context: context,
-            location: location,
-            from: O.self,
-            into: newValue
-        )
+        try storage.access(scope: scope, context: context, location: location) {
+           
+            try $0.transition(from: oldValueInstance, into: newValue)
+        }
     }
     
+    @discardableResult
     func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
         from oldValueType: O.Type,
         into newValue: N
-    ) throws where O.Key == Self, N.Key == Self {
+    ) throws -> ByTypeStorage.History where O.Key == Self, N.Key == Self {
         
         try storage.access(scope: scope, context: context, location: location) {
            
@@ -253,29 +269,31 @@ extension SomeKey where Self: FeatureShell
         }
     }
     
+    @discardableResult
     func transition<V: SomeStorableByKey>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
-        overrideSame: Bool = false,
         into newValue: V
-    ) throws where V.Key == Self {
+    ) throws -> ByTypeStorage.History where V.Key == Self {
         
         try storage.access(scope: scope, context: context, location: location) {
            
-            try $0.transition(overrideSame: overrideSame, into: newValue)
+            try $0.transition(into: newValue)
         }
     }
     
+    @discardableResult
     func deinitialize(
         scope: String = #file,
         context: String = #function,
-        location: Int = #line
-    ) throws {
+        location: Int = #line,
+        strict: Bool = true
+    ) throws -> ByTypeStorage.History {
         
         try storage.access(scope: scope, context: context, location: location) {
            
-            try $0.deinitialize(Self.self)
+            try $0.deinitialize(Self.self, strict: strict)
         }
     }
 }

@@ -25,8 +25,35 @@
  */
 
 public
-enum AccessEventBindingSource
+extension ByTypeStorage
 {
-    case keyType(SomeKey.Type)
-    case observerType(StorageObserver.Type)
+    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
+    {
+        try? fetch(valueOfType: V.self)
+    }
+    
+    func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
+    {
+        self[V.self] != nil
+    }
+}
+
+//---
+
+public
+extension SomeStorableByKey
+{
+    static
+    func fetch(from storage: ByTypeStorage) throws -> Self
+    {
+        try storage.fetch(valueOfType: self)
+    }
+
+    //---
+
+    static
+    func isPresent(in storage: ByTypeStorage) -> Bool
+    {
+        storage.hasValue(ofType: self)
+    }
 }
