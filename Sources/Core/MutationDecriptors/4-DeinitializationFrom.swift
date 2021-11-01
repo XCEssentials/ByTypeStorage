@@ -24,20 +24,34 @@
  
  */
 
-// MARK: - GET data
+import Foundation /// for access to `Date` type
+
+//---
 
 public
-extension SomeKey
+struct DeinitializationFrom<Old: SomeStorableByKey>
 {
-    static
-    func fetch(from storage: ByTypeStorage) throws -> SomeStorable
-    {
-        try storage.fetch(valueForKey: self)
-    }
+    public
+    let timestamp: Date
 
-    static
-    func isPresent(in storage: ByTypeStorage) -> Bool
-    {
-        storage.hasValue(withKey: self)
+    public
+    let oldValue: Old
+    
+    public
+    init?(
+        from mutationReport: ByTypeStorage.HistoryElement
+    ) {
+        
+        guard
+            let oldValue = mutationReport.asDeinitialization?.oldValue as? Old
+        else
+        {
+            return nil
+        }
+        
+        //---
+        
+        self.timestamp = mutationReport.timestamp
+        self.oldValue = oldValue
     }
 }
