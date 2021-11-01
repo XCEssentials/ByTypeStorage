@@ -291,7 +291,21 @@ extension SomeKey where Self: FeatureShell
         
         try storage.access(scope: scope, context: context, location: location) {
            
-            try $0.deinitialize(Self.self, strict: strict)
+            try $0.deinitialize(Self.self, fromValueType: nil, strict: strict)
+        }
+    }
+    
+    @discardableResult
+    func deinitialize<V: SomeStorableByKey>(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line,
+        from fromValueType: V.Type
+    ) throws -> ByTypeStorage.History where V.Key == Self {
+        
+        try storage.access(scope: scope, context: context, location: location) {
+           
+            try $0.deinitialize(Self.self, fromValueType: fromValueType, strict: true)
         }
     }
 }
