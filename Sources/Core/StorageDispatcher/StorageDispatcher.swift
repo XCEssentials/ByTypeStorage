@@ -223,6 +223,9 @@ extension StorageDispatcher
                         $0.construct(with: self)
                     }
             )}
+            .filter {
+                !$0.bindings.isEmpty
+            }
             .forEach {
                 
                 self.bindings[$0.key.name] = $0.bindings
