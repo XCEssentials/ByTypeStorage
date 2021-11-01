@@ -28,7 +28,6 @@ import Combine
 
 //---
 
-@MainActor
 public
 extension BDD.GivenOrThenContext
 {

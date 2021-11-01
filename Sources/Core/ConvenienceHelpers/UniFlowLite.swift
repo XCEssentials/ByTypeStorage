@@ -45,7 +45,6 @@ protocol SomeSelfContainedFeature: SomeSelfKey, SomeStorableByKey {}
 
 //---
 
-@MainActor
 open
 class FeatureShell
 {
@@ -162,7 +161,6 @@ class FeatureShell
     }
 }
 
-@MainActor
 public
 extension SomeKey where Self: FeatureShell
 {

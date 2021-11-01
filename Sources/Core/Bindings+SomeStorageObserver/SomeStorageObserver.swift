@@ -31,7 +31,6 @@ import Combine
 public
 protocol SomeStorageObserver: AnyObject
 {
-    @MainActor
     var bindings: [AccessReportBindingExt] { get }
 }
 
@@ -40,7 +39,6 @@ extension SomeStorageObserver
 {
     typealias Itself = Self
     
-    @MainActor
     func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
     {
         bindings.map{ $0.construct(with: dispatcher) }

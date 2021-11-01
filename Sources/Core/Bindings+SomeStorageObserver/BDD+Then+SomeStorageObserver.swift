@@ -24,7 +24,6 @@
  
  */
 
-@MainActor
 public
 extension BDD.GivenOrThenContext where S: SomeStorageObserver
 {
@@ -75,7 +74,6 @@ extension BDD.GivenOrThenContext where S: SomeStorageObserver
 
 //---
 
-@MainActor
 public
 extension BDD.ThenContext where S: SomeStorageObserver
 {

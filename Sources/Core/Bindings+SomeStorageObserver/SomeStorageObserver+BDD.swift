@@ -27,7 +27,6 @@
 public
 extension SomeStorageObserver
 {
-    @MainActor
     func scenario(
         _ description: String = ""
     ) -> BDD.WhenContext<Self> {

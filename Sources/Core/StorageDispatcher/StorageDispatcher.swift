@@ -29,7 +29,6 @@ import Combine
 
 //---
 
-@MainActor
 public
 final
 class StorageDispatcher
@@ -298,14 +297,12 @@ struct AccessReportBinding: SomeAccessReportBinding
     
     //---
     
-    @MainActor
     public
     func construct(with dispatcher: StorageDispatcher) -> AnyCancellable
     {
         body(dispatcher, self).sink(receiveCompletion: { _ in }, receiveValue: { })
     }
     
-    @MainActor
     public
     init<S: SomeKey, W: Publisher, G>(
         source: S.Type,
@@ -430,14 +427,12 @@ struct AccessReportBindingExt: SomeAccessReportBinding
     
     //---
     
-    @MainActor
     public
     func construct(with dispatcher: StorageDispatcher) -> AnyCancellable
     {
         body(dispatcher, self).sink(receiveCompletion: { _ in }, receiveValue: { })
     }
     
-    @MainActor
     public
     init<S: SomeStorageObserver, W: Publisher, G>(
         source: S,
