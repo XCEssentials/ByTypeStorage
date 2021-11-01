@@ -27,7 +27,6 @@
 public
 extension NoBindings where Self: SomeKey
 {
-    @MainActor
     static
     var bindings: [AccessReportBinding] { [] }
 }

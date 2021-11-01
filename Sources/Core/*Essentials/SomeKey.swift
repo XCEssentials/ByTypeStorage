@@ -28,7 +28,6 @@
 public
 protocol SomeKey
 {
-    @MainActor
     static
     var bindings: [AccessReportBinding] { get }
 }

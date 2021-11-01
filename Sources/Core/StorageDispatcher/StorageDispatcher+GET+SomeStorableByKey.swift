@@ -80,7 +80,6 @@ extension StorageDispatcher
 public
 extension SomeStorableByKey
 {
-    @MainActor
     static
     func fetch(
         scope: String = #file,
@@ -96,10 +95,9 @@ extension SomeStorableByKey
             valueOfType: self
         )
     }
-
+    
     //---
-
-    @MainActor
+    
     static
     func isPresent(
         scope: String = #file,
