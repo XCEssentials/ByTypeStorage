@@ -24,15 +24,31 @@
  
  */
 
+import Combine
+
+//---
+
+@MainActor
 public
-extension StorageObserver
+extension BDD.WhenContext
 {
-    @MainActor
-    static
-    func scenario(
-        _ description: String = ""
-    ) -> BDD.WhenContext {
+    func when<P: Publisher>(
+        _ when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> P
+    ) -> BDD.GivenOrThenContext<S, P> {
         
-        .init(source: .observerType(self), description: description)
+        .init(
+            description: description,
+            when: { when($0) }
+        )
+    }
+    
+    func when<M: SomeMutationDecriptor>(
+        _: M.Type = M.self
+    ) -> BDD.GivenOrThenContext<S, AnyPublisher<M, Never>> {
+        
+        .init(
+            description: description,
+            when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
+        )
     }
 }

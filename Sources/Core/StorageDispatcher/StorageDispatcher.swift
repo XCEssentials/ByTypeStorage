@@ -33,17 +33,25 @@ public
 final
 class StorageDispatcher
 {
+    fileprivate
+    typealias AccessLog = PassthroughSubject<AccessReport, Never>
+    
+    fileprivate
+    typealias BindingsStatusLog = PassthroughSubject<AccessReportBindingStatus, Never>
+    
+    //---
+    
     private
     var storage: ByTypeStorage
     
     private
     var bindings: [String: [AnyCancellable]] = [:]
     
-    private
-    let _accessLog = PassthroughSubject<AccessReport, Never>()
+    fileprivate
+    let _accessLog = AccessLog()
     
-    private
-    let _bindingsStatusLog = PassthroughSubject<AccessReportBindingStatus, Never>()
+    fileprivate
+    let _bindingsStatusLog = BindingsStatusLog()
     
     //---
     
@@ -67,155 +75,6 @@ class StorageDispatcher
     ) {
         
         self.storage = storage
-    }
-}
-
-// MARK: - Nested types
-
-public
-extension StorageDispatcher
-{
-    enum AccessReportBindingSource
-    {
-        case keyType(SomeKey.Type)
-        case observerType(StorageObserver.Type)
-    }
-    
-    struct AccessReportBinding<W: Publisher, G>: SomeAccessEventBinding
-    {
-        public
-        let source: AccessReportBindingSource
-        
-        public
-        let description: String
-        
-        public
-        let scope: String
-        
-        public
-        let location: Int
-        
-        //internal
-        let when: (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> W
-        
-        //internal
-        let given: (StorageDispatcher, W.Output) throws -> G?
-        
-        //internal
-        let then: (StorageDispatcher, G) -> Void
-        
-        @MainActor
-        public
-        func construct(with dispatcher: StorageDispatcher) -> AnyCancellable
-        {
-            when(dispatcher.accessLog)
-                .tryCompactMap { [weak dispatcher] in
-                    
-                    guard let dispatcher = dispatcher else { return nil }
-                    
-                    //---
-                    
-                    return try given(dispatcher, $0)
-                }
-                .handleEvents(
-                    receiveOutput: { [weak dispatcher] (_: G) in
-                        
-                        guard let dispatcher = dispatcher else { return }
-                        
-                        //---
-                        
-                        dispatcher
-                            ._bindingsStatusLog
-                            .send(
-                                .triggered(self)
-                            )
-                    }
-                )
-                .compactMap { [weak dispatcher] in
-                    
-                    guard let dispatcher = dispatcher else { return nil }
-
-                    //---
-
-                    return then(dispatcher, $0) // map into `Void` to erase type info
-                }
-                .handleEvents(
-                    receiveSubscription: { [weak dispatcher] _ in
-                        
-                        guard let dispatcher = dispatcher else { return }
-                        
-                        //---
-                        
-                        dispatcher
-                            ._bindingsStatusLog
-                            .send(
-                                .activated(self)
-                            )
-                    },
-                    receiveCancel: { [weak dispatcher] in
-                        
-                        guard let dispatcher = dispatcher else { return }
-                        
-                        //---
-                        
-                        dispatcher
-                            ._bindingsStatusLog
-                            .send(
-                                .cancelled(self)
-                            )
-                    }
-                )
-                .sink(
-                    receiveCompletion: { [weak dispatcher] in
-                        
-                        guard let dispatcher = dispatcher else { return }
-                        
-                        //---
-                        
-                        switch $0
-                        {
-                            case .failure(let error):
-                                
-                                dispatcher
-                                    ._bindingsStatusLog
-                                    .send(
-                                        .failed(self, error)
-                                    )
-                                
-                            default:
-                                break
-                        }
-                    },
-                    receiveValue: { [weak dispatcher] in
-                        
-                        guard let dispatcher = dispatcher else { return }
-                        
-                        //---
-                        
-                        dispatcher
-                            ._bindingsStatusLog
-                            .send(
-                                .executed(self)
-                            )
-                    }
-                )
-        }
-    }
-    
-    enum AccessReportBindingStatus
-    {
-        case activated(SomeAccessEventBinding)
-        
-        /// After passing through `when` (and `given`,
-        /// if present) claus(es), right before `then`.
-        case triggered(SomeAccessEventBinding)
-        
-        /// After executing `then` clause.
-        case executed(SomeAccessEventBinding)
-        
-        case failed(SomeAccessEventBinding, Error)
-        
-        case cancelled(SomeAccessEventBinding)
     }
 }
 
@@ -356,10 +215,14 @@ extension StorageDispatcher
                         return nil
                 }
             }
-            .map {
-                
-                ( key: $0, bindings: $0.bindings.map { $0.construct(with: self) } )
-            }
+            .map {(
+                key: $0,
+                bindings: $0
+                    .bindings
+                    .map {
+                        $0.construct(with: self)
+                    }
+            )}
             .forEach {
                 
                 self.bindings[$0.key.name] = $0.bindings
@@ -387,5 +250,253 @@ extension StorageDispatcher
                 
                 self.bindings.removeValue(forKey: $0.name)
             }
+    }
+}
+
+// MARK: - Binding - Internal
+
+public
+struct AccessReportBinding: SomeAccessReportBinding
+{
+    public
+    let source: AccessReportBindingSource
+    
+    public
+    let description: String
+    
+    public
+    let scope: String
+    
+    public
+    let location: Int
+    
+    //---
+    
+    private
+    let body: (StorageDispatcher, Self) -> AnyPublisher<Void, Error>
+    
+    //---
+    
+    @MainActor
+    public
+    func construct(with dispatcher: StorageDispatcher) -> AnyCancellable
+    {
+        body(dispatcher, self).sink(receiveCompletion: { _ in }, receiveValue: { })
+    }
+    
+    @MainActor
+    public
+    init<S: SomeKey, W: Publisher, G>(
+        source: S.Type,
+        description: String,
+        scope: String,
+        location: Int,
+        when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> W,
+        given: @escaping (StorageDispatcher, W.Output) throws -> G?,
+        then: @escaping (StorageDispatcher, G) -> Void
+    ) {
+        
+        self.source = .keyType(S.self)
+        self.description = description
+        self.scope = scope
+        self.location = location
+        
+        self.body = { dispatcher, binding in
+            
+            when(dispatcher.accessLog)
+                .tryCompactMap { [weak dispatcher] in
+
+                    guard let dispatcher = dispatcher else { return nil }
+
+                    //---
+
+                    return try given(dispatcher, $0)
+                }
+                .handleEvents(
+                    receiveOutput: { [weak dispatcher] _ in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .triggered(binding)
+                            )
+                    }
+                )
+                .compactMap { [weak dispatcher] (givenOutput: G) -> Void? in
+                    
+                    guard let dispatcher = dispatcher else { return nil }
+
+                    //---
+
+                    return then(dispatcher, givenOutput) // map into `Void` to erase type info
+                }
+                .handleEvents(
+                    receiveSubscription: { [weak dispatcher] _ in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .activated(binding)
+                            )
+                    },
+                    receiveOutput: { [weak dispatcher] _ in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .executed(binding)
+                            )
+                    },
+                    receiveCompletion: { [weak dispatcher] in
+
+                        switch $0
+                        {
+                            case .failure(let error):
+
+                                dispatcher?
+                                    ._bindingsStatusLog
+                                    .send(
+                                        .failed(binding, error)
+                                    )
+
+                            default:
+                                break
+                        }
+                    },
+                    receiveCancel: { [weak dispatcher] in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .cancelled(binding)
+                            )
+                    }
+                )
+                .eraseToAnyPublisher()
+        }
+    }
+}
+
+// MARK: - Binding - External
+
+public
+struct AccessReportBindingExt: SomeAccessReportBinding
+{
+    public
+    let source: AccessReportBindingSource
+    
+    public
+    let description: String
+    
+    public
+    let scope: String
+    
+    public
+    let location: Int
+    
+    //---
+    
+    private
+    let body: (StorageDispatcher, Self) -> AnyPublisher<Void, Error>
+    
+    //---
+    
+    @MainActor
+    public
+    func construct(with dispatcher: StorageDispatcher) -> AnyCancellable
+    {
+        body(dispatcher, self).sink(receiveCompletion: { _ in }, receiveValue: { })
+    }
+    
+    @MainActor
+    public
+    init<S: SomeStorageObserver, W: Publisher, G>(
+        source: S,
+        description: String,
+        scope: String,
+        location: Int,
+        when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> W,
+        given: @escaping (StorageDispatcher, W.Output) throws -> G?,
+        then: @escaping (S, G) -> Void
+    ) {
+
+        self.source = .observerType(S.self)
+        self.description = description
+        self.scope = scope
+        self.location = location
+
+        self.body = { dispatcher, binding in
+
+            when(dispatcher.accessLog)
+                .tryCompactMap { [weak dispatcher] in
+
+                    guard let dispatcher = dispatcher else { return nil }
+
+                    //---
+
+                    return try given(dispatcher, $0)
+                }
+                .handleEvents(
+                    receiveOutput: { [weak dispatcher] _ in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .triggered(binding)
+                            )
+                    }
+                )
+                .compactMap { [weak source] (givenOutput: G) -> Void? in
+
+                    guard let source = source else { return nil }
+
+                    //---
+
+                    return then(source, givenOutput) // map into `Void` to erase type info
+                }
+                .handleEvents(
+                    receiveSubscription: { [weak dispatcher] _ in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .activated(binding)
+                            )
+                    },
+                    receiveOutput: { [weak dispatcher] _ in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .executed(binding)
+                            )
+                    },
+                    receiveCompletion: { [weak dispatcher] in
+
+                        switch $0
+                        {
+                            case .failure(let error):
+
+                                dispatcher?
+                                    ._bindingsStatusLog
+                                    .send(
+                                        .failed(binding, error)
+                                    )
+
+                            default:
+                                break
+                        }
+                    },
+                    receiveCancel: { [weak dispatcher] in
+
+                        dispatcher?
+                            ._bindingsStatusLog
+                            .send(
+                                .cancelled(binding)
+                            )
+                    }
+                )
+                .eraseToAnyPublisher()
+        }
     }
 }

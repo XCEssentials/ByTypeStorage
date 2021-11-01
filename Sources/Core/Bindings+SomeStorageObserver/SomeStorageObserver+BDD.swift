@@ -24,24 +24,14 @@
  
  */
 
-/// Semantic marker for type that can be used as key in the storage.
 public
-protocol SomeKey
+extension SomeStorageObserver
 {
     @MainActor
-    static
-    var bindings: [AccessReportBinding] { get }
-}
-
-//---
-
-public
-extension SomeKey
-{
-    /// `ByTypeStorage` will use this as actual key.
-    static
-    var name: String
-    {
-        .init(reflecting: Self.self)
+    func scenario(
+        _ description: String = ""
+    ) -> BDD.WhenContext<Self> {
+        
+        .init(description: description)
     }
 }

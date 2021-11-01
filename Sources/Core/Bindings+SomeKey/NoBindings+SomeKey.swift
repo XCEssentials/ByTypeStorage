@@ -24,44 +24,10 @@
  
  */
 
-import Combine
-
-//---
-
 public
-extension BDD
+extension NoBindings where Self: SomeKey
 {
     @MainActor
-    struct WhenContext
-    {
-        public
-        let source: StorageDispatcher.AccessReportBindingSource
-        
-        public
-        let description: String
-        
-        public
-        func when<P: Publisher>(
-            _ when: @escaping (AnyPublisher<StorageDispatcher.AccessReport, Never>) -> P
-        ) -> GivenOrThenContext<P> {
-            
-            .init(
-                source: source,
-                description: description,
-                when: { when($0) }
-            )
-        }
-        
-        public
-        func when<M: SomeMutationDecriptor>(
-            _: M.Type = M.self
-        ) -> GivenOrThenContext<AnyPublisher<M, Never>> {
-            
-            .init(
-                source: source,
-                description: description,
-                when: { $0.onProcessed.mutation(M.self).eraseToAnyPublisher() }
-            )
-        }
-    }
+    static
+    var bindings: [AccessReportBinding] { [] }
 }

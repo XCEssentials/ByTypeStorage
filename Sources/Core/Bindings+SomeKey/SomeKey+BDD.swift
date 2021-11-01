@@ -31,8 +31,8 @@ extension SomeKey
     static
     func scenario(
         _ description: String = ""
-    ) -> BDD.WhenContext {
+    ) -> BDD.WhenContext<Self> {
         
-        .init(source: .keyType(self), description: description)
+        .init(description: description)
     }
 }

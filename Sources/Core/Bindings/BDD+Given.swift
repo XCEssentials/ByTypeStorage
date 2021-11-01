@@ -28,23 +28,38 @@ import Combine
 
 //---
 
+@MainActor
 public
-protocol StorageObserver: AnyObject
+extension BDD.GivenOrThenContext
 {
-    @MainActor
-    static
-    var bindings: [SomeAccessEventBinding] { get }
-}
-
-public
-extension StorageObserver
-{
-    typealias Itself = Self
+    func given<G>(
+        _ given: @escaping (StorageDispatcher, W.Output) throws -> G?
+    ) -> BDD.ThenContext<S, W, G> {
+        
+        .init(
+            description: description,
+            when: when,
+            given: given
+        )
+    }
     
-    @MainActor
-    static
-    func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
-    {
-        bindings.map{ $0.construct(with: dispatcher) }
+    func given<G>(
+        _ dispatcherOnlyHandler: @escaping (StorageDispatcher) -> G?
+    ) -> BDD.ThenContext<S, W, G> {
+        
+        given { dispatcher, _ in
+            
+            dispatcherOnlyHandler(dispatcher)
+        }
+    }
+    
+    func given<G>(
+        _ outputOnlyHandler: @escaping (W.Output) -> G?
+    ) -> BDD.ThenContext<S, W, G> {
+        
+        given { _, output in
+            
+            outputOnlyHandler(output)
+        }
     }
 }

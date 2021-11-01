@@ -29,18 +29,20 @@ import Combine
 //---
 
 public
-protocol SomeAccessEventBinding
+protocol SomeStorageObserver: AnyObject
 {
-    var source: StorageDispatcher.AccessReportBindingSource { get }
-    
-    var description: String { get }
-    
-    var scope: String { get }
-    
-    var location: Int { get }
+    @MainActor
+    var bindings: [AccessReportBindingExt] { get }
+}
+
+public
+extension SomeStorageObserver
+{
+    typealias Itself = Self
     
     @MainActor
-    func construct(
-        with dispatcher: StorageDispatcher
-    ) -> AnyCancellable
+    func observe(_ dispatcher: StorageDispatcher) -> [AnyCancellable]
+    {
+        bindings.map{ $0.construct(with: dispatcher) }
+    }
 }

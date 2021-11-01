@@ -24,24 +24,9 @@
  
  */
 
-/// Semantic marker for type that can be used as key in the storage.
 public
-protocol SomeKey
+enum AccessReportBindingSource
 {
-    @MainActor
-    static
-    var bindings: [AccessReportBinding] { get }
-}
-
-//---
-
-public
-extension SomeKey
-{
-    /// `ByTypeStorage` will use this as actual key.
-    static
-    var name: String
-    {
-        .init(reflecting: Self.self)
-    }
+    case keyType(SomeKey.Type)
+    case observerType(SomeStorageObserver.Type)
 }
