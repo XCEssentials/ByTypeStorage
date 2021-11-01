@@ -24,6 +24,7 @@
  
  */
 
+import Foundation
 import Combine
 
 //---
@@ -58,13 +59,17 @@ class StorageDispatcher
     public
     var accessLog: AnyPublisher<AccessReport, Never>
     {
-        _accessLog.eraseToAnyPublisher()
+        _accessLog
+            .receive(on: RunLoop.main, options: nil)
+            .eraseToAnyPublisher()
     }
     
     public
     var bindingsStatusLog: AnyPublisher<AccessReportBindingStatus, Never>
     {
-        _bindingsStatusLog.eraseToAnyPublisher()
+        _bindingsStatusLog
+            .receive(on: RunLoop.main, options: nil)
+            .eraseToAnyPublisher()
     }
     
     //---
@@ -73,6 +78,9 @@ class StorageDispatcher
     init(
         with storage: ByTypeStorage = ByTypeStorage()
     ) {
+        assert(Thread.isMainThread, "Must be on main thread!")
+        
+        //---
         
         self.storage = storage
     }
@@ -98,6 +106,10 @@ extension StorageDispatcher
         location: Int = #line,
         _ handler: AccessHandler
     ) throws -> ByTypeStorage.History {
+        
+        assert(Thread.isMainThread, "Must be on main thread!")
+        
+        //---
         
         // we want to avoid partial changes to be applied in case the handler throws
         var tmpCopyStorage = storage
@@ -202,6 +214,9 @@ extension StorageDispatcher
     func installBindings(
         basedOn reports: ByTypeStorage.History
     ) {
+        assert(Thread.isMainThread, "Must be on main thread!")
+        
+        //---
         
         reports
             .compactMap { report -> SomeKey.Type? in
@@ -236,6 +251,9 @@ extension StorageDispatcher
     func uninstallBindings(
         basedOn reports: ByTypeStorage.History
     ) {
+        assert(Thread.isMainThread, "Must be on main thread!")
+        
+        //---
         
         reports
             .compactMap { report -> SomeKey.Type? in
@@ -298,6 +316,9 @@ struct AccessReportBinding: SomeAccessReportBinding
         given: @escaping (StorageDispatcher, W.Output) throws -> G?,
         then: @escaping (StorageDispatcher, G) -> Void
     ) {
+        assert(Thread.isMainThread, "Must be on main thread!")
+        
+        //---
         
         self.source = .keyType(S.self)
         self.description = description
@@ -306,7 +327,12 @@ struct AccessReportBinding: SomeAccessReportBinding
         
         self.body = { dispatcher, binding in
             
-            when(dispatcher.accessLog)
+            assert(Thread.isMainThread, "Must be on main thread!")
+            
+            //---
+            
+            return when(dispatcher.accessLog)
+                .receive(on: RunLoop.main, options: nil)
                 .tryCompactMap { [weak dispatcher] in
 
                     guard let dispatcher = dispatcher else { return nil }
@@ -422,15 +448,23 @@ struct AccessReportBindingExt: SomeAccessReportBinding
         given: @escaping (StorageDispatcher, W.Output) throws -> G?,
         then: @escaping (S, G) -> Void
     ) {
-
+        assert(Thread.isMainThread, "Must be on main thread!")
+        
+        //---
+        
         self.source = .observerType(S.self)
         self.description = description
         self.scope = scope
         self.location = location
 
         self.body = { dispatcher, binding in
-
-            when(dispatcher.accessLog)
+            
+            assert(Thread.isMainThread, "Must be on main thread!")
+            
+            //---
+            
+            return when(dispatcher.accessLog)
+                .receive(on: RunLoop.main, options: nil)
                 .tryCompactMap { [weak dispatcher] in
 
                     guard let dispatcher = dispatcher else { return nil }
