@@ -177,21 +177,26 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func removeValue<K: SomeKey>(
-        forKey keyType: K.Type,
-        strict: Bool
+    func removeValue(
+        forKey keyType: SomeKey.Type,
+        fromValueType: SomeStorable.Type? = nil,
+        strict: Bool = true
     ) throws -> MutationAttemptOutcome {
         
-        let implicitlyExpectedMutation: ExpectedMutation = .deinitialization(strict: strict)
+        let implicitlyExpectedMutation: ExpectedMutation = .deinitialization(
+            fromValueType: fromValueType,
+            strict: strict
+        )
+        
         let outcome: MutationAttemptOutcome
         
         //---
         
-        switch data[K.name]
+        switch data[keyType.name]
         {
             case .some(let oldValue):
                 
-                outcome = .deinitialization(key: K.self, oldValue: oldValue)
+                outcome = .deinitialization(key: keyType, oldValue: oldValue)
                 
                 //---
                 
@@ -199,11 +204,11 @@ extension ByTypeStorage
                 
                 //---
                 
-                data.removeValue(forKey: K.name)
+                data.removeValue(forKey: keyType.name)
                 
             case .none:
                 
-                outcome = .nothingToRemove(key: K.self)
+                outcome = .nothingToRemove(key: keyType)
                 
                 //---
                 
