@@ -27,6 +27,5 @@
 public
 extension NoBindings where Self: SomeStorageObserver
 {
-    @MainActor
     var bindings: [AccessReportBindingExt] { [] }
 }

@@ -24,7 +24,6 @@
  
  */
 
-@MainActor
 public
 extension BDD.GivenOrThenContext where S: SomeKey
 {
@@ -72,7 +71,6 @@ extension BDD.GivenOrThenContext where S: SomeKey
 
 //---
 
-@MainActor
 public
 extension BDD.ThenContext where S: SomeKey
 {
