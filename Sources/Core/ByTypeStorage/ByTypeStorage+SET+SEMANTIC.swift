@@ -42,7 +42,7 @@ extension ByTypeStorage
         case initialization
         case actualization
         case transition(fromValueType: SomeStorable.Type?)
-        case deinitialization(strict: Bool)
+        case deinitialization(fromValueType: SomeStorable.Type?, strict: Bool)
         
         func validateProposedOutcome(_ outcome: MutationAttemptOutcome) throws -> Void
         {
@@ -69,11 +69,16 @@ extension ByTypeStorage
                     
                     break // OK
                     
-                case (.deinitialization /* strict: true */, .deinitialization):
+                case (.deinitialization(.some(let givenOldValueType), _), .deinitialization(let oldValue, _))
+                    where givenOldValueType == type(of: oldValue):
                     
                     break // OK
                     
-                case (.deinitialization(strict: false), .nothingToRemove):
+                case (.deinitialization(.none, _), .deinitialization):
+                    
+                    break // OK
+                    
+                case (.deinitialization(.none, strict: false), .nothingToRemove):
                     
                     break // OK
                     
@@ -207,13 +212,15 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func deinitialize<K: SomeKey>(
-        _: K.Type,
-        strict: Bool = true
+    func deinitialize(
+        _ keyType: SomeKey.Type,
+        fromValueType: SomeStorable.Type?, // = nil,
+        strict: Bool // = true
     ) throws -> MutationAttemptOutcome {
         
         try removeValue(
-            forKey: K.self,
+            forKey: keyType,
+            fromValueType: fromValueType,
             strict: strict
         )
     }
