@@ -59,7 +59,6 @@ class StorageDispatcher
     var accessLog: AnyPublisher<AccessReport, Never>
     {
         _accessLog
-            .receive(on: RunLoop.main, options: nil)
             .eraseToAnyPublisher()
     }
     
@@ -67,7 +66,6 @@ class StorageDispatcher
     var bindingsStatusLog: AnyPublisher<AccessReportBindingStatus, Never>
     {
         _bindingsStatusLog
-            .receive(on: RunLoop.main, options: nil)
             .eraseToAnyPublisher()
     }
     
