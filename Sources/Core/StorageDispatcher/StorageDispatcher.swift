@@ -327,7 +327,6 @@ struct AccessReportBinding: SomeAccessReportBinding
             //---
             
             return when(dispatcher.accessLog)
-                .receive(on: RunLoop.main, options: nil)
                 .tryCompactMap { [weak dispatcher] in
 
                     guard let dispatcher = dispatcher else { return nil }
@@ -457,7 +456,6 @@ struct AccessReportBindingExt: SomeAccessReportBinding
             //---
             
             return when(dispatcher.accessLog)
-                .receive(on: RunLoop.main, options: nil)
                 .tryCompactMap { [weak dispatcher] in
 
                     guard let dispatcher = dispatcher else { return nil }
