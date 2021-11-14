@@ -88,6 +88,16 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
+    var allValues: [SomeStorable]
+    {
+        storage.allValues
+    }
+    
+    var allKeys: [SomeKey.Type]
+    {
+        storage.allKeys
+    }
+    
     typealias AccessHandler = (inout ByTypeStorage) throws -> Void
     
     enum AccessError: Error
