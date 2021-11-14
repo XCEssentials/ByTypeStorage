@@ -70,6 +70,19 @@ extension ByTypeStorage
 public
 extension ByTypeStorage
 {
+    var allValues: [SomeStorable]
+    {
+        .init(data.values)
+    }
+    
+    var allKeys: [SomeKey.Type]
+    {
+        allValues
+            .map {
+                type(of: $0).keyType
+            }
+    }
+    
     func fetch(valueForKey keyType: SomeKey.Type) throws -> SomeStorable
     {
         if
