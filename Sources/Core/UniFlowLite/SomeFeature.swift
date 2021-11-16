@@ -27,6 +27,8 @@
 public
 protocol SomeFeature: SomeSelfKey {}
 
+//---
+
 public
 extension SomeFeature
 {
@@ -36,133 +38,7 @@ extension SomeFeature
 //---
 
 public
-protocol SomeState: SomeStorableByKey {}
-
-//---
-
-public
-protocol SomeSelfContainedFeature: SomeSelfKey, SomeStorableByKey {}
-
-//---
-
-open
-class FeatureShell
-{
-    public
-    let storage: StorageDispatcher
-    
-    public
-    init(
-        with storageDispatcher: StorageDispatcher
-    ) {
-        
-        self.storage = storageDispatcher
-    }
-    
-    /// Group several read/write operations in one access report.
-    public
-    func access(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        _ handler: () throws -> Void
-    ) throws {
-        
-        // in uni-directionl data flow context we do not want to return anything directly
-        // but we want to propagate thrown errors
-        _ = try storage.access(
-            scope: scope,
-            context: context,
-            location: location,
-            { _ in try handler() }
-        )
-    }
-    
-    /// Wrap throwing piece of code and crash with `fatalError` if an error is thrown.
-    ///
-    /// We call "must" and "must not" words of obligation. "Must" is the only word that imposes
-    /// a legal obligation on your readers to tell them something is mandatory.
-    public
-    func must(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        _ handler: () throws -> Void
-    ) {
-        do
-        {
-            try storage.access(
-                scope: scope,
-                context: context,
-                location: location,
-                { _ in try handler() }
-            )
-        }
-        catch
-        {
-            fatalError(error.localizedDescription)
-        }
-    }
-    
-    /// Wrap throwing piece of code and crash in DEBUG ONLY (via assertation) if an error is thrown.
-    ///
-    /// 'Shall' is used to express ideas and laws.
-    public
-    func shall(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        _ handler: () throws -> Void
-    ) {
-        do
-        {
-            try storage.access(
-                scope: scope,
-                context: context,
-                location: location,
-                { _ in try handler() }
-            )
-        }
-        catch
-        {
-            assertionFailure(error.localizedDescription)
-        }
-    }
-    
-    /// Wrap throwing piece of code and fail softly by ignoring thrown error.
-    ///
-    /// 'Should' is used to express personal opinions and desires, and primarily to give advice.
-    @discardableResult
-    public
-    func should(
-        scope: String = #file,
-        context: String = #function,
-        location: Int = #line,
-        _ handler: () throws -> Void
-    ) -> Bool {
-        
-        do
-        {
-            try storage.access(
-                scope: scope,
-                context: context,
-                location: location,
-                { _ in try handler() }
-            )
-            
-            //---
-            
-            return true
-        }
-        catch
-        {
-            return false
-        }
-    }
-}
-
-public
-extension SomeKey where Self: FeatureShell
+extension SomeFeature where Self: FeatureBase
 {
     @discardableResult
     func ensureCurrentState<V: SomeStorableByKey>(
