@@ -32,7 +32,7 @@ public
 struct FeatureStatus
 {
     public
-    enum StatusDescriptor: String, Equatable, Codable
+    enum StatusIndicator: String, Equatable, Codable
     {
         case ok = "🟢"
         case busy = "🟠"
@@ -52,7 +52,7 @@ struct FeatureStatus
     let state: SomeStateBase?
     
     public
-    let status: StatusDescriptor
+    let indicator: StatusIndicator
     
     public
     init(missing feature: SomeFeatureBase.Type)
@@ -60,7 +60,7 @@ struct FeatureStatus
         self.title = feature.displayName
         self.subtitle = "<missing>"
         self.state = nil
-        self.status = .missing
+        self.indicator = .missing
     }
     
     public
@@ -73,13 +73,13 @@ struct FeatureStatus
         switch state
         {
             case is FailureIndicator:
-                self.status = .failure
+                self.indicator = .failure
                 
             case is BusyIndicator:
-                self.status = .busy
+                self.indicator = .busy
                 
             default:
-                self.status = .ok
+                self.indicator = .ok
         }
     }
 }
