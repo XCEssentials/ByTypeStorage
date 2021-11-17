@@ -95,16 +95,16 @@ extension Publisher where Output == StorageDispatcher.ProcessedAccessEventReport
             .filter {
                 !$0.mutations.isEmpty
             }
-            .flatMap(
-                \.storage.allValues.publisher
-            )
-            .compactMap {
-                $0 as? SomeStateBase
+            .map {
+                $0.storage
+                    .allValues
+                    .compactMap {
+                        $0 as? SomeStateBase
+                    }
+                    .map(
+                        FeatureStatus.init
+                    )
             }
-            .map(
-                FeatureStatus.init
-            )
-            .collect()
             .eraseToAnyPublisher()
     }
 }
