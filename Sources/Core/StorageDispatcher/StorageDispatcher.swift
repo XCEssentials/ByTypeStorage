@@ -35,6 +35,9 @@ class StorageDispatcher
 {
     fileprivate
     typealias AccessLog = PassthroughSubject<AccessReport, Never>
+ 
+    fileprivate
+    typealias Status = CurrentValueSubject<[FeatureStatus], Never>
     
     fileprivate
     typealias BindingsStatusLog = PassthroughSubject<AccessReportBindingStatus, Never>
@@ -51,6 +54,12 @@ class StorageDispatcher
     let _accessLog = AccessLog()
     
     fileprivate
+    let _status = Status([])
+    
+    private
+    var statusSubscription: AnyCancellable?
+    
+    fileprivate
     let _bindingsStatusLog = BindingsStatusLog()
     
     //---
@@ -59,6 +68,13 @@ class StorageDispatcher
     var accessLog: AnyPublisher<AccessReport, Never>
     {
         _accessLog
+            .eraseToAnyPublisher()
+    }
+    
+    public
+    var status: AnyPublisher<[FeatureStatus], Never>
+    {
+        _status
             .eraseToAnyPublisher()
     }
     
@@ -80,6 +96,15 @@ class StorageDispatcher
         //---
         
         self.storage = storage
+        
+        //---
+        
+        self.statusSubscription = accessLog
+            .onProcessed
+            .statusReport
+            .sink { [weak self] in
+                self?._status.send($0)
+            }
     }
 }
 
