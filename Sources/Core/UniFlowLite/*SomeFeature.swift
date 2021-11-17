@@ -25,7 +25,7 @@
  */
 
 public
-protocol SomeFeature: SomeSelfKey {}
+protocol SomeFeature: SomeFeatureBase, SomeSelfKey {}
 
 //---
 
@@ -41,7 +41,7 @@ public
 extension SomeFeature where Self: FeatureBase
 {
     @discardableResult
-    func ensureCurrentState<V: SomeStorableByKey>(
+    func ensureCurrentState<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -57,7 +57,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func store<V: SomeStorableByKey>(
+    func store<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -71,7 +71,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func initialize<V: SomeStorableByKey>(
+    func initialize<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -85,7 +85,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func actualize<V: SomeStorableByKey>(
+    func actualize<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -100,7 +100,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func actualize<V: SomeStorableByKey>(
+    func actualize<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -114,7 +114,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+    func transition<O: SomeStorable, N: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -129,7 +129,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+    func transition<O: SomeStorable, N: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -144,7 +144,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func transition<V: SomeStorableByKey>(
+    func transition<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -172,7 +172,7 @@ extension SomeFeature where Self: FeatureBase
     }
     
     @discardableResult
-    func deinitialize<V: SomeStorableByKey>(
+    func deinitialize<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,

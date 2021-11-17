@@ -24,12 +24,21 @@
  
  */
 
-/**
- Conformance to this protocol allows an instance of 'Self' type to be stored in any 'ByTypeStorage' instance.
- */
 public
-protocol SomeStorable
+protocol SomeStorable: SomeStorableBase
 {
+    associatedtype Key: SomeKey
+}
+
+// MARK: - Helpers
+
+public
+extension SomeStorable
+{
+    /// `ByTypeStorage` will use this as actual key.
     static
-    var keyType: SomeKey.Type { get }
+    var key: SomeKey.Type
+    {
+        Key.self
+    }
 }

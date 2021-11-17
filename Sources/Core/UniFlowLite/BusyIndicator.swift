@@ -25,7 +25,4 @@
  */
 
 public
-protocol SomeState: SomeStorableByKey
-{
-    typealias Feature = Key
-}
+protocol BusyIndicator: SomeStateBase {}

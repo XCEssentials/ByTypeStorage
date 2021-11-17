@@ -25,4 +25,7 @@
  */
 
 public
-protocol SomeSelfContainedFeature: SomeSelfKey, SomeStorableByKey {}
+protocol SomeState: SomeStateBase, SomeStorable where Key == Feature
+{
+    associatedtype Feature: SomeFeature
+}

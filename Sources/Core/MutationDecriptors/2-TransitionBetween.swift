@@ -29,7 +29,7 @@ import Foundation /// for access to `Date` type
 //---
 
 public
-struct TransitionBetween<Old: SomeStorableByKey, New: SomeStorableByKey>: SomeMutationDecriptor
+struct TransitionBetween<Old: SomeStorable, New: SomeStorable>: SomeMutationDecriptor
 {
     public
     let timestamp: Date

@@ -35,10 +35,10 @@ struct AnyMutationOf<K: SomeKey>: SomeMutationDecriptor
     let timestamp: Date
 
     public
-    let oldValue: SomeStorable?
+    let oldValue: SomeStorableBase?
     
     public
-    let newValue: SomeStorable?
+    let newValue: SomeStorableBase?
     
     public
     init?(

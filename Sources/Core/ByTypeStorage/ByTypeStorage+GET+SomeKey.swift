@@ -27,7 +27,7 @@
 public
 extension ByTypeStorage
 {
-    subscript(_ keyType: SomeKey.Type) -> SomeStorable?
+    subscript(_ keyType: SomeKey.Type) -> SomeStorableBase?
     {
         try? fetch(valueForKey: keyType)
     }
@@ -44,7 +44,7 @@ public
 extension SomeKey
 {
     static
-    func fetch(from storage: ByTypeStorage) throws -> SomeStorable
+    func fetch(from storage: ByTypeStorage) throws -> SomeStorableBase
     {
         try storage.fetch(valueForKey: self)
     }

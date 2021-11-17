@@ -41,8 +41,8 @@ extension ByTypeStorage
         case auto
         case initialization
         case actualization
-        case transition(fromValueType: SomeStorable.Type?)
-        case deinitialization(fromValueType: SomeStorable.Type?, strict: Bool)
+        case transition(fromValueType: SomeStorableBase.Type?)
+        case deinitialization(fromValueType: SomeStorableBase.Type?, strict: Bool)
         
         func validateProposedOutcome(_ outcome: MutationAttemptOutcome) throws -> Void
         {
@@ -99,7 +99,7 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func initialize<V: SomeStorableByKey>(
+    func initialize<V: SomeStorable>(
         with newValue: V
     ) throws -> MutationAttemptOutcome {
         
@@ -117,7 +117,7 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func actualize<V: SomeStorableByKey>(
+    func actualize<V: SomeStorable>(
         _: V.Type = V.self,
         via mutationHandler: (inout V) throws -> Void
     ) throws -> MutationAttemptOutcome {
@@ -135,7 +135,7 @@ extension ByTypeStorage
     
     @discardableResult
     mutating
-    func actualize<V: SomeStorableByKey>(
+    func actualize<V: SomeStorable>(
         with newValue: V
     ) throws -> MutationAttemptOutcome {
         
@@ -153,7 +153,7 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+    func transition<O: SomeStorable, N: SomeStorable>(
         from _: O,
         into newValue: N
     ) throws -> MutationAttemptOutcome where O.Key == N.Key /* NOTE: "O != N" is implied*/ {
@@ -166,7 +166,7 @@ extension ByTypeStorage
     
     @discardableResult
     mutating
-    func transition<O: SomeStorableByKey, N: SomeStorableByKey>(
+    func transition<O: SomeStorable, N: SomeStorable>(
         from _: O.Type,
         into newValue: N
     ) throws -> MutationAttemptOutcome where O.Key == N.Key /* NOTE: "O != N" is implied*/ {
@@ -181,7 +181,7 @@ extension ByTypeStorage
     /// so in best case scenario it is going to be actualization.
     @discardableResult
     mutating
-    func transition<V: SomeStorableByKey>(
+    func transition<V: SomeStorable>(
         from _: V.Type,
         into newValue: V
     ) throws -> MutationAttemptOutcome {
@@ -194,7 +194,7 @@ extension ByTypeStorage
     
     @discardableResult
     mutating
-    func transition<V: SomeStorableByKey>(
+    func transition<V: SomeStorable>(
         into newValue: V
     ) throws -> MutationAttemptOutcome {
         
@@ -214,7 +214,7 @@ extension ByTypeStorage
     mutating
     func deinitialize(
         _ keyType: SomeKey.Type,
-        fromValueType: SomeStorable.Type?, // = nil,
+        fromValueType: SomeStorableBase.Type?, // = nil,
         strict: Bool // = true
     ) throws -> MutationAttemptOutcome {
         

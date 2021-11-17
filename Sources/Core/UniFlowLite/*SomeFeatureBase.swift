@@ -25,20 +25,20 @@
  */
 
 public
-protocol SomeStorableByKey: SomeStorable
+protocol SomeFeatureBase: SomeKey
 {
-    associatedtype Key: SomeKey
+    static
+    var displayName: String { get }
 }
 
-// MARK: - Helpers
+//---
 
 public
-extension SomeStorableByKey
+extension SomeFeatureBase
 {
-    /// `ByTypeStorage` will use this as actual key.
     static
-    var keyType: SomeKey.Type
+    var displayName: String
     {
-        Key.self
+        name
     }
 }

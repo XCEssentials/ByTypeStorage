@@ -44,10 +44,10 @@ extension ByTypeStorage
     
     enum MutationAttemptOutcome
     {
-        case initialization(key: SomeKey.Type, newValue: SomeStorable)
-        case actualization(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
-        case transition(key: SomeKey.Type, oldValue: SomeStorable, newValue: SomeStorable)
-        case deinitialization(key: SomeKey.Type, oldValue: SomeStorable)
+        case initialization(key: SomeKey.Type, newValue: SomeStorableBase)
+        case actualization(key: SomeKey.Type, oldValue: SomeStorableBase, newValue: SomeStorableBase)
+        case transition(key: SomeKey.Type, oldValue: SomeStorableBase, newValue: SomeStorableBase)
+        case deinitialization(key: SomeKey.Type, oldValue: SomeStorableBase)
         
         /// No removal operation has been performed, because no such key has been found.
         case nothingToRemove(key: SomeKey.Type)
@@ -87,10 +87,10 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let oldValue: SomeStorable?
+        let oldValue: SomeStorableBase?
         
         public
-        let newValue: SomeStorable?
+        let newValue: SomeStorableBase?
     }
     
     var asAnyMutation: AnyMutationOutcome?
@@ -150,7 +150,7 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let newValue: SomeStorable
+        let newValue: SomeStorableBase
     }
     
     var asInitialization: InitializationOutcome?
@@ -191,7 +191,7 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let newValue: SomeStorable
+        let newValue: SomeStorableBase
     }
     
     /// Operation that results with given key being present in the storage.
@@ -236,10 +236,10 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let oldValue: SomeStorable
+        let oldValue: SomeStorableBase
         
         public
-        let newValue: SomeStorable
+        let newValue: SomeStorableBase
     }
     
     /// Operation that has both old and new values.
@@ -282,10 +282,10 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let oldValue: SomeStorable
+        let oldValue: SomeStorableBase
         
         public
-        let newValue: SomeStorable
+        let newValue: SomeStorableBase
     }
     
     var asActualization: ActualizationOutcome?
@@ -326,10 +326,10 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let oldValue: SomeStorable
+        let oldValue: SomeStorableBase
         
         public
-        let newValue: SomeStorable
+        let newValue: SomeStorableBase
     }
     
     var asTransition: TransitionOutcome?
@@ -370,7 +370,7 @@ extension ByTypeStorage.HistoryElement
         let key: SomeKey.Type
         
         public
-        let oldValue: SomeStorable
+        let oldValue: SomeStorableBase
     }
     
     var asDeinitialization: DeinitializationOutcome?

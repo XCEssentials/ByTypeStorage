@@ -27,12 +27,12 @@
 public
 extension ByTypeStorage
 {
-    subscript<V: SomeStorableByKey>(_ valueType: V.Type = V.self) -> V?
+    subscript<V: SomeStorable>(_ valueType: V.Type = V.self) -> V?
     {
         try? fetch(valueOfType: V.self)
     }
     
-    func hasValue<V: SomeStorableByKey>(ofType valueType: V.Type) -> Bool
+    func hasValue<V: SomeStorable>(ofType valueType: V.Type) -> Bool
     {
         self[V.self] != nil
     }
@@ -41,7 +41,7 @@ extension ByTypeStorage
 //---
 
 public
-extension SomeStorableByKey
+extension SomeStorable
 {
     static
     func fetch(from storage: ByTypeStorage) throws -> Self

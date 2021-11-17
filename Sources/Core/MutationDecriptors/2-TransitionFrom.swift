@@ -29,7 +29,7 @@ import Foundation /// for access to `Date` type
 //---
 
 public
-struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
+struct TransitionFrom<Old: SomeStorable>: SomeMutationDecriptor
 {
     public
     let timestamp: Date
@@ -38,7 +38,7 @@ struct TransitionFrom<Old: SomeStorableByKey>: SomeMutationDecriptor
     let oldValue: Old
     
     public
-    let newValue: SomeStorable
+    let newValue: SomeStorableBase
     
     public
     init?(
