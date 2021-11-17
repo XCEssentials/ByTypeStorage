@@ -32,7 +32,7 @@ public
 struct ByTypeStorage
 {
     private
-    var data: [String: SomeStorable] = [:]
+    var data: [String: SomeStorableBase] = [:]
     
     public private(set)
     var history: History = []
@@ -59,8 +59,8 @@ extension ByTypeStorage
         
         case valueTypeMismatch(
             key: SomeKey.Type,
-            expected: SomeStorable.Type,
-            actual: SomeStorable
+            expected: SomeStorableBase.Type,
+            actual: SomeStorableBase
         )
     }
 }
@@ -70,7 +70,7 @@ extension ByTypeStorage
 public
 extension ByTypeStorage
 {
-    var allValues: [SomeStorable]
+    var allValues: [SomeStorableBase]
     {
         .init(data.values)
     }
@@ -79,11 +79,11 @@ extension ByTypeStorage
     {
         allValues
             .map {
-                type(of: $0).keyType
+                type(of: $0).key
             }
     }
     
-    func fetch(valueForKey keyType: SomeKey.Type) throws -> SomeStorable
+    func fetch(valueForKey keyType: SomeKey.Type) throws -> SomeStorableBase
     {
         if
             let result = data[keyType.name]
@@ -96,7 +96,7 @@ extension ByTypeStorage
         }
     }
     
-    func fetch<V: SomeStorableByKey>(valueOfType _: V.Type = V.self) throws -> V
+    func fetch<V: SomeStorable>(valueOfType _: V.Type = V.self) throws -> V
     {
         let someResult = try fetch(valueForKey: V.Key.self)
         
@@ -125,7 +125,7 @@ extension ByTypeStorage
 {
     @discardableResult
     mutating
-    func store<V: SomeStorableByKey>(
+    func store<V: SomeStorable>(
         _ value: V,
         expectedMutation: ExpectedMutation = .auto
     ) throws -> MutationAttemptOutcome {
@@ -192,7 +192,7 @@ extension ByTypeStorage
     mutating
     func removeValue(
         forKey keyType: SomeKey.Type,
-        fromValueType: SomeStorable.Type? = nil,
+        fromValueType: SomeStorableBase.Type? = nil,
         strict: Bool = true
     ) throws -> MutationAttemptOutcome {
         

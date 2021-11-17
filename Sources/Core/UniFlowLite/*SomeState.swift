@@ -25,20 +25,7 @@
  */
 
 public
-protocol SomeStorableByKey: SomeStorable
+protocol SomeState: SomeStateBase, SomeStorable where Key == Feature
 {
-    associatedtype Key: SomeKey
-}
-
-// MARK: - Helpers
-
-public
-extension SomeStorableByKey
-{
-    /// `ByTypeStorage` will use this as actual key.
-    static
-    var keyType: SomeKey.Type
-    {
-        Key.self
-    }
+    associatedtype Feature: SomeFeature
 }

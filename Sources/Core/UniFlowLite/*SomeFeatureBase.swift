@@ -24,39 +24,21 @@
  
  */
 
-import Foundation /// for access to `Date` type
+public
+protocol SomeFeatureBase: SomeKey
+{
+    static
+    var displayName: String { get }
+}
 
 //---
 
 public
-struct TransitionInto<New: SomeStorable>: SomeMutationDecriptor
+extension SomeFeatureBase
 {
-    public
-    let timestamp: Date
-
-    public
-    let oldValue: SomeStorableBase
-    
-    public
-    let newValue: New
-    
-    public
-    init?(
-        from mutationReport: ByTypeStorage.HistoryElement
-    ) {
-        
-        guard
-            let oldValue = mutationReport.asTransition?.oldValue,
-            let newValue = mutationReport.asTransition?.newValue as? New
-        else
-        {
-            return nil
-        }
-        
-        //---
-        
-        self.timestamp = mutationReport.timestamp
-        self.oldValue = oldValue
-        self.newValue = newValue
+    static
+    var displayName: String
+    {
+        name
     }
 }

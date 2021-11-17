@@ -26,3 +26,8 @@
 
 public
 protocol NoBindings {}
+
+//---
+
+public
+protocol NoBindingsExt {}

@@ -27,7 +27,7 @@
 public
 extension StorageDispatcher
 {
-    func fetch<V: SomeStorableByKey>(
+    func fetch<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -50,7 +50,7 @@ extension StorageDispatcher
     
     //---
     
-    func hasValue<V: SomeStorableByKey>(
+    func hasValue<V: SomeStorable>(
         scope: String = #file,
         context: String = #function,
         location: Int = #line,
@@ -78,7 +78,7 @@ extension StorageDispatcher
 //---
 
 public
-extension SomeStorableByKey
+extension SomeStorable
 {
     static
     func fetch(

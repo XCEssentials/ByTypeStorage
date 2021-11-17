@@ -24,39 +24,12 @@
  
  */
 
-import Foundation /// for access to `Date` type
-
-//---
-
+/**
+ Conformance to this protocol allows an instance of 'Self' type to be stored in any 'ByTypeStorage' instance.
+ */
 public
-struct TransitionInto<New: SomeStorable>: SomeMutationDecriptor
+protocol SomeStorableBase
 {
-    public
-    let timestamp: Date
-
-    public
-    let oldValue: SomeStorableBase
-    
-    public
-    let newValue: New
-    
-    public
-    init?(
-        from mutationReport: ByTypeStorage.HistoryElement
-    ) {
-        
-        guard
-            let oldValue = mutationReport.asTransition?.oldValue,
-            let newValue = mutationReport.asTransition?.newValue as? New
-        else
-        {
-            return nil
-        }
-        
-        //---
-        
-        self.timestamp = mutationReport.timestamp
-        self.oldValue = oldValue
-        self.newValue = newValue
-    }
+    static
+    var key: SomeKey.Type { get }
 }
