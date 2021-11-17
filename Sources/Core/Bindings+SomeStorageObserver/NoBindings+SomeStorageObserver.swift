@@ -25,7 +25,7 @@
  */
 
 public
-extension NoBindings where Self: SomeStorageObserver
+extension NoBindingsExt where Self: SomeStorageObserver
 {
     var bindings: [AccessReportBindingExt] { [] }
 }

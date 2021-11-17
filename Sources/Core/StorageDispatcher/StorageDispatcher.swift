@@ -88,7 +88,7 @@ class StorageDispatcher
 public
 extension StorageDispatcher
 {
-    var allValues: [SomeStorable]
+    var allValues: [SomeStorableBase]
     {
         storage.allValues
     }

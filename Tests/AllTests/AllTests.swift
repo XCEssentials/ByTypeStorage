@@ -5,19 +5,19 @@ import XCEByTypeStorage
 
 //---
 
-struct One: SomeStorableByKey, SomeSelfKey, NoBindings
+struct One: SomeStorable, SomeSelfKey, NoBindings
 {
     var val: Int
 }
 
 enum TheKey: SomeKey, NoBindings {}
 
-struct Two: SomeStorableByKey
+struct Two: SomeStorable
 {
     typealias Key = TheKey
 }
 
-struct Three: SomeStorableByKey
+struct Three: SomeStorable
 {
     typealias Key = TheKey
 }
