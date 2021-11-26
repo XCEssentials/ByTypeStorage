@@ -238,6 +238,16 @@ extension ByTypeStorage
         
         return outcome
     }
+    
+    @discardableResult
+    mutating
+    func removeAll() throws -> [MutationAttemptOutcome] {
+        
+        try allKeys
+            .map {
+                try removeValue(forKey: $0, fromValueType: nil, strict: false)
+            }
+    }
 }
 
 // MARK: - History management
