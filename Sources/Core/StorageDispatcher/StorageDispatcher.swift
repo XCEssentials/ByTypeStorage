@@ -235,6 +235,19 @@ extension StorageDispatcher
         
         return mutationsToReport
     }
+    
+    @discardableResult
+    func removeAll(
+        scope: String = #file,
+        context: String = #function,
+        location: Int = #line
+    ) throws -> ByTypeStorage.History {
+        
+        try access(scope: scope, context: context, location: location) {
+           
+            try $0.removeAll()
+        }
+    }
 }
 
 // MARK: - Bindings management
