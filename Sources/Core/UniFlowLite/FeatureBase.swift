@@ -24,11 +24,33 @@
  
  */
 
+import Combine
+
+//---
+
 open
 class FeatureBase
 {
     public private(set)
     var dispatcher: StorageDispatcher!
+    {
+        didSet
+        {
+            if
+                let observer = self as? SomeStorageObserver,
+                let dispatcher = self.dispatcher
+            {
+                self.subscriptions = observer.observe(dispatcher)
+            }
+            else
+            {
+                self.subscriptions = []
+            }
+        }
+    }
+    
+    private
+    var subscriptions: [AnyCancellable] = []
     
     public
     init() {}
