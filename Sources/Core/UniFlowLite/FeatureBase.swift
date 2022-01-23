@@ -24,18 +24,49 @@
  
  */
 
+import Combine
+
+//---
+
 open
 class FeatureBase
 {
+    public private(set)
+    var dispatcher: StorageDispatcher!
+    {
+        didSet
+        {
+            if
+                let observer = self as? SomeStorageObserver,
+                let dispatcher = self.dispatcher
+            {
+                self.subscriptions = observer.observe(dispatcher)
+            }
+            else
+            {
+                self.subscriptions = []
+            }
+        }
+    }
+    
+    private
+    var subscriptions: [AnyCancellable] = []
+    
     public
-    let storage: StorageDispatcher
+    init() {}
     
     public
     init(
         with storageDispatcher: StorageDispatcher
     ) {
-        
-        self.storage = storageDispatcher
+        self.dispatcher = storageDispatcher
+    }
+    
+    public
+    func configure(
+        with storageDispatcher: StorageDispatcher
+    ) {
+        self.dispatcher = storageDispatcher
     }
     
     /// Group several read/write operations in one access report.
@@ -49,7 +80,7 @@ class FeatureBase
         
         // in uni-directionl data flow context we do not want to return anything directly
         // but we want to propagate thrown errors
-        _ = try storage.access(
+        _ = try dispatcher.access(
             scope: scope,
             context: context,
             location: location,
@@ -70,7 +101,7 @@ class FeatureBase
     ) {
         do
         {
-            try storage.access(
+            try dispatcher.access(
                 scope: scope,
                 context: context,
                 location: location,
@@ -95,7 +126,7 @@ class FeatureBase
     ) {
         do
         {
-            try storage.access(
+            try dispatcher.access(
                 scope: scope,
                 context: context,
                 location: location,
@@ -122,7 +153,7 @@ class FeatureBase
         
         do
         {
-            try storage.access(
+            try dispatcher.access(
                 scope: scope,
                 context: context,
                 location: location,
