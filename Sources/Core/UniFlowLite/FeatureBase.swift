@@ -27,15 +27,24 @@
 open
 class FeatureBase
 {
+    public private(set)
+    var dispatcher: StorageDispatcher!
+    
     public
-    let storage: StorageDispatcher
+    init() {}
     
     public
     init(
         with storageDispatcher: StorageDispatcher
     ) {
-        
-        self.storage = storageDispatcher
+        self.dispatcher = storageDispatcher
+    }
+    
+    public
+    func configure(
+        with storageDispatcher: StorageDispatcher
+    ) {
+        self.dispatcher = storageDispatcher
     }
     
     /// Group several read/write operations in one access report.
@@ -49,7 +58,7 @@ class FeatureBase
         
         // in uni-directionl data flow context we do not want to return anything directly
         // but we want to propagate thrown errors
-        _ = try storage.access(
+        _ = try dispatcher.access(
             scope: scope,
             context: context,
             location: location,
@@ -70,7 +79,7 @@ class FeatureBase
     ) {
         do
         {
-            try storage.access(
+            try dispatcher.access(
                 scope: scope,
                 context: context,
                 location: location,
@@ -95,7 +104,7 @@ class FeatureBase
     ) {
         do
         {
-            try storage.access(
+            try dispatcher.access(
                 scope: scope,
                 context: context,
                 location: location,
@@ -122,7 +131,7 @@ class FeatureBase
         
         do
         {
-            try storage.access(
+            try dispatcher.access(
                 scope: scope,
                 context: context,
                 location: location,
